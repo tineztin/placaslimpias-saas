@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="strict-origin">
+<title>Calculadora de pérdidas por suciedad en placas solares</title>
+<style>
+/* ============================================================
+   SISTEMA DE TOKENS
+   Solo --accent y --logo cambian por cliente. El resto es fijo
+   para que ninguna marca pueda romper el contraste ni la lectura.
+   ============================================================ */
+:root{
+  --accent:#0B63CE;
+  --on-accent:#FFFFFF;
+  --accent-soft:rgba(11,99,206,.10);
+
+  --ink:#0E1620;
+  --ink-2:#33414F;
+  --ink-3:#6B7A89;
+  --paper:#EDF1F4;
+  --card:#FFFFFF;
+  --line:#D6DDE4;
+  --line-2:#E8EDF1;
+
+  --dust:#A8761B;
+  --dust-soft:#F4EBD9;
+  --good:#15803D;
+
+  --fs-ui:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --fs-data:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+
+  --r:10px;
+  --gap:18px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--fs-ui);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding:14px;
+}
+
+/* --- tipografía utilitaria --- */
+.eyebrow{
+  font-family:var(--fs-data);
+  font-size:10.5px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-3);
+  margin:0 0 8px;
+  display:block;
+}
+.data{font-family:var(--fs-data);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* --- contenedor --- */
+.wrap{max-width:980px;margin:0 auto}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.head img{height:30px;width:auto;max-width:150px;object-fit:contain}
+.head .title{margin:0;font-size:16px;font-weight:650;letter-spacing:-.01em}
+.head .sub{margin:2px 0 0;font-size:13px;color:var(--ink-3)}
+
+.grid{display:grid;gap:var(--gap);grid-template-columns:1fr}
+@media(min-width:880px){.grid{grid-template-columns:1.05fr .95fr;align-items:start}}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:18px;
+}
+
+/* --- controles --- */
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+.field > label{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px;color:var(--ink-2)}
+.hint{font-size:12px;color:var(--ink-3);font-weight:400;margin-top:4px;display:block}
+
+select,input[type=text],input[type=email],input[type=tel],input[type=number]{
+  width:100%;
+  font:inherit;
+  color:var(--ink);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 11px;
+  appearance:none;
+}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7A89' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 11px center;
+  padding-right:32px;
+}
+:is(select,input):focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+
+/* --- segmentado --- */
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{
+  flex:1 1 auto;
+  text-align:center;
+  min-width:70px;
+  padding:9px 10px;
+  font-size:13px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  cursor:pointer;
+  color:var(--ink-2);
+  background:var(--card);
+  user-select:none;
+}
+.seg input:checked + label{
+  border-color:var(--accent);
+  background:var(--accent-soft);
+  color:var(--ink);
+  font-weight:600;
+}
+.seg input:focus-visible + label{outline:2px solid var(--accent);outline-offset:1px}
+
+/* --- slider --- */
+.slider-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:2px}
+.slider-val{font-family:var(--fs-data);font-size:14px;font-weight:600;color:var(--ink)}
+input[type=range]{
+  width:100%;
+  appearance:none;
+  background:transparent;
+  height:26px;
+  margin:0;
+}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--line);border-radius:99px}
+input[type=range]::-moz-range-track{height:4px;background:var(--line);border-radius:99px}
+input[type=range]::-webkit-slider-thumb{
+  appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--accent);border:3px solid var(--card);
+  box-shadow:0 0 0 1px var(--line);margin-top:-8px;cursor:grab;
+}
+input[type=range]::-moz-range-thumb{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--accent);border:3px solid var(--card);
+  box-shadow:0 0 0 1px var(--line);cursor:grab;
+}
+input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+
+/* --- avanzado --- */
+details.adv{margin-top:14px;border-top:1px solid var(--line-2);padding-top:12px}
+details.adv summary{
+  cursor:pointer;font-size:13px;color:var(--ink-3);
+  font-family:var(--fs-data);letter-spacing:.04em;text-transform:uppercase;font-size:11px;
+  list-style:none;
+}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary::before{content:"+ ";font-weight:700}
+details.adv[open] summary::before{content:"– "}
+details.adv > .adv-body{padding-top:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ============================================================
+   PIEZA FIRMA: el panel que se ensucia en tiempo real
+   ============================================================ */
+.stage{
+  background:var(--ink);
+  border-radius:var(--r);
+  padding:20px 20px 16px;
+  position:relative;
+  overflow:hidden;
+}
+.stage .eyebrow{color:#7E8FA0}
+.panel-svg{display:block;width:100%;height:auto;border-radius:4px}
+#dustLayer{transition:opacity .45s ease}
+#birdGroup{transition:opacity .45s ease}
+
+.meter{margin-top:16px}
+.meter-track{height:6px;background:#22303E;border-radius:99px;overflow:hidden}
+.meter-fill{height:100%;background:var(--dust);border-radius:99px;transition:width .45s ease}
+.meter-scale{
+  display:flex;justify-content:space-between;
+  font-family:var(--fs-data);font-size:10px;color:#6B7A89;margin-top:6px;
+}
+
+/* --- lectura de resultado --- */
+.readout{margin-top:18px;padding-top:16px;border-top:1px solid #22303E}
+.readout .lead-num{
+  font-family:var(--fs-data);
+  font-size:clamp(30px,7vw,42px);
+  font-weight:700;
+  letter-spacing:-.035em;
+  color:#fff;
+  line-height:1.05;
+  display:block;
+}
+.readout .lead-cap{color:#94A5B5;font-size:13px;margin:6px 0 0;max-width:34ch}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.stat{background:#18242F;border-radius:8px;padding:11px 12px}
+.stat b{display:block;font-family:var(--fs-data);font-size:17px;color:#fff;font-weight:600;letter-spacing:-.02em}
+.stat span{display:block;font-size:11.5px;color:#8496A6;margin-top:3px;line-height:1.35}
+
+/* --- CTA --- */
+.cta{
+  display:block;width:100%;margin-top:18px;
+  background:var(--accent);color:var(--on-accent);
+  border:0;border-radius:9px;padding:14px 16px;
+  font:inherit;font-weight:650;font-size:15px;cursor:pointer;
+  text-align:center;
+}
+.cta:hover{filter:brightness(1.07)}
+.cta:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.cta[disabled]{opacity:.55;cursor:not-allowed;filter:none}
+.cta-note{text-align:center;font-size:11.5px;color:#7E8FA0;margin:8px 0 0}
+
+/* --- formulario de contacto --- */
+.gate{margin-top:18px;padding-top:16px;border-top:1px solid #22303E}
+.gate h3{margin:0 0 4px;font-size:15px;color:#fff;font-weight:650}
+.gate p.gsub{margin:0 0 14px;font-size:12.5px;color:#94A5B5}
+.gate label{display:block;font-size:12px;color:#94A5B5;margin-bottom:5px;font-weight:500}
+.gate .field{margin-bottom:12px}
+.gate input[type=text],.gate input[type=email],.gate input[type=tel]{
+  background:#18242F;border-color:#2B3B49;color:#fff;
+}
+.gate input::placeholder{color:#5E7080}
+.gate input:focus-visible{outline-color:var(--accent);border-color:var(--accent)}
+.consent{display:flex;gap:9px;align-items:flex-start;margin:14px 0 0}
+.consent input{margin:2px 0 0;width:16px;height:16px;flex:0 0 auto;accent-color:var(--accent)}
+.consent label{font-size:11.5px;color:#8496A6;line-height:1.45;margin:0}
+.consent a{color:#B9C7D4}
+.hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+
+.msg{margin-top:12px;font-size:13px;border-radius:8px;padding:10px 12px;display:none}
+.msg.err{display:block;background:#3A1D1D;color:#FFC9C9;border:1px solid #582929}
+.msg.ok{display:block;background:#12291C;color:#B7EFC9;border:1px solid #1F4630}
+
+/* --- desglose post-envío --- */
+.breakdown{display:none;margin-top:16px}
+.breakdown.show{display:block}
+.brow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line-2);font-size:13.5px}
+.brow:last-child{border-bottom:0}
+.brow b{font-family:var(--fs-data);font-variant-numeric:tabular-nums;font-weight:600}
+.brow.total{border-top:2px solid var(--ink);border-bottom:0;margin-top:4px;padding-top:11px;font-weight:650}
+
+.disclaimer{font-size:11px;color:var(--ink-3);line-height:1.5;margin:14px 2px 0}
+.legal-foot{text-align:center;font-size:10.5px;color:var(--ink-3);margin-top:14px}
+
+@media(prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <img id="brandLogo" alt="" hidden>
+    <div>
+      <h1 class="title">¿Cuánto te cuesta la suciedad de tus placas?</h1>
+      <p class="sub">Estimación en 30 segundos. Sin compromiso.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ============ COLUMNA IZQUIERDA: ENTRADAS ============ -->
+    <section class="card" aria-labelledby="h-datos">
+      <span class="eyebrow" id="h-datos">Tu instalación</span>
+
+      <div class="field">
+        <label for="kwp">Potencia instalada</label>
+        <div class="slider-row">
+          <span class="hint" style="margin:0">Mueve para ajustar</span>
+          <span class="slider-val" id="kwpVal">5,0 kWp</span>
+        </div>
+        <input type="range" id="kwp" min="1" max="100" step="0.5" value="5"
+               aria-describedby="kwpHelp">
+        <span class="hint" id="kwpHelp">Unos <span id="nPanels">11</span> paneles. Si no lo sabes, mira la factura o el inversor.</span>
+      </div>
+
+      <div class="field">
+        <label for="zona">¿Dónde está la instalación?</label>
+        <select id="zona">
+          <option value="norte">Norte y cornisa cantábrica</option>
+          <option value="centro" selected>Centro y meseta</option>
+          <option value="levante">Levante y Baleares</option>
+          <option value="sur">Sur (Andalucía, Extremadura)</option>
+          <option value="canarias">Canarias</option>
+        </select>
+        <span class="hint">De aquí sacamos el sol que recibes y la lluvia que la limpia.</span>
+      </div>
+
+      <div class="field">
+        <label for="entorno">¿Qué hay alrededor de las placas?</label>
+        <select id="entorno">
+          <option value="residencial">Zona residencial tranquila</option>
+          <option value="urbana" selected>Ciudad con tráfico</option>
+          <option value="costa">Primera línea de costa</option>
+          <option value="agricola">Campo o cultivos</option>
+          <option value="industrial">Polígono, cantera u obra</option>
+          <option value="ganaderia">Granja o explotación ganadera</option>
+        </select>
+        <span class="hint">Es el factor que más pesa en el cálculo.</span>
+      </div>
+
+      <div class="field">
+        <label for="meses">Desde la última limpieza</label>
+        <div class="slider-row">
+          <span class="hint" style="margin:0">0 = recién limpiadas</span>
+          <span class="slider-val" id="mesesVal">12 meses</span>
+        </div>
+        <input type="range" id="meses" min="0" max="36" step="1" value="12">
+      </div>
+
+      <details class="adv">
+        <summary>Afinar el cálculo</summary>
+        <div class="adv-body">
+          <div class="field">
+            <label>Inclinación de los paneles</label>
+            <div class="seg" role="radiogroup" aria-label="Inclinación">
+              <input type="radio" name="tilt" id="t1" value="plano"><label for="t1">Planos</label>
+              <input type="radio" name="tilt" id="t2" value="baja"><label for="t2">Poca</label>
+              <input type="radio" name="tilt" id="t3" value="media" checked><label for="t3">Normal</label>
+              <input type="radio" name="tilt" id="t4" value="alta"><label for="t4">Mucha</label>
+            </div>
+            <span class="hint">Cuanto más planos, menos los limpia la lluvia.</span>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="pImport">Precio de tu luz (€/kWh)</label>
+              <input type="number" id="pImport" value="0.20" min="0.05" max="1" step="0.01" inputmode="decimal">
+            </div>
+            <div class="field">
+              <label for="pExport">Excedentes (€/kWh)</label>
+              <input type="number" id="pExport" value="0.06" min="0" max="1" step="0.01" inputmode="decimal">
+            </div>
+          </div>
+          <div class="field">
+            <label for="auto">Cuánto consumes de lo que produces</label>
+            <div class="slider-row">
+              <span class="hint" style="margin:0">El resto se vierte a la red</span>
+              <span class="slider-val" id="autoVal">65 %</span>
+            </div>
+            <input type="range" id="auto" min="10" max="100" step="5" value="65">
+          </div>
+          <div class="field">
+            <label for="freq">Limpiezas al año que valoras</label>
+            <div class="seg" role="radiogroup" aria-label="Limpiezas al año">
+              <input type="radio" name="freq" id="f0" value="auto" checked><label for="f0">Auto</label>
+              <input type="radio" name="freq" id="f1" value="1"><label for="f1">1</label>
+              <input type="radio" name="freq" id="f2" value="2"><label for="f2">2</label>
+              <input type="radio" name="freq" id="f3" value="3"><label for="f3">3</label>
+              <input type="radio" name="freq" id="f4" value="4"><label for="f4">4</label>
+            </div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============ COLUMNA DERECHA: RESULTADO ============ -->
+    <section class="stage" aria-live="polite">
+      <span class="eyebrow">Estado estimado de tus placas</span>
+
+      <!-- PIEZA FIRMA -->
+      <svg class="panel-svg" viewBox="0 0 340 210" role="img" aria-labelledby="panelDesc">
+        <title id="panelDesc">Representación del panel con el nivel de suciedad estimado</title>
+        <defs>
+          <linearGradient id="cellGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#1E3A6B"/>
+            <stop offset="55%" stop-color="#132A4F"/>
+            <stop offset="100%" stop-color="#0C1D3A"/>
+          </linearGradient>
+          <linearGradient id="glare" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#fff" stop-opacity=".16"/>
+            <stop offset="45%" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="grain" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="7"/>
+            <feColorMatrix type="matrix"
+              values="0 0 0 0 0.72  0 0 0 0 0.58  0 0 0 0 0.30  0 0 0 -1.2 1"/>
+          </filter>
+          <clipPath id="panelClip"><rect x="20" y="14" width="300" height="168" rx="2"/></clipPath>
+        </defs>
+
+        <!-- marco de aluminio y backsheet -->
+        <rect x="14" y="8" width="312" height="180" rx="7" fill="#96A4B2"/>
+        <rect x="17" y="11" width="306" height="174" rx="5" fill="#5D6C7B"/>
+        <rect x="20" y="14" width="300" height="168" rx="2" fill="#E3E9EE"/>
+
+        <!-- 24 células monocristalinas -->
+        <g id="cells" fill="url(#cellGrad)"></g>
+        <g id="busbars" stroke="#7E9AC0" stroke-width=".6" opacity=".55"></g>
+
+        <!-- capa de suciedad -->
+        <g clip-path="url(#panelClip)">
+          <g id="dustLayer" opacity="0">
+            <rect x="20" y="14" width="300" height="168" fill="#BE9A57" opacity=".62"/>
+            <rect x="20" y="14" width="300" height="168" filter="url(#grain)"/>
+            <rect x="20" y="152" width="300" height="30" fill="#8A6A2E" opacity=".55"/>
+          </g>
+          <g id="birdGroup" opacity="0" fill="#F5F0E4">
+            <ellipse cx="96" cy="46" rx="7" ry="9.5"/>
+            <ellipse cx="100" cy="59" rx="3.5" ry="4"/>
+            <ellipse cx="230" cy="110" rx="9" ry="6"/>
+            <ellipse cx="241" cy="117" rx="3" ry="3"/>
+            <ellipse cx="165" cy="150" rx="5" ry="7.5"/>
+          </g>
+        </g>
+
+        <rect x="20" y="14" width="300" height="168" rx="2" fill="url(#glare)" pointer-events="none"/>
+        <rect x="14" y="8" width="312" height="180" rx="7" fill="none" stroke="#B8C4CF" stroke-width="1.5"/>
+        <!-- soportes -->
+        <path d="M64 188l-16 18M276 188l16 18" stroke="#5D6C7B" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+
+      <div class="meter">
+        <div class="meter-track"><div class="meter-fill" id="meterFill" style="width:0%"></div></div>
+        <div class="meter-scale">
+          <span>Limpio</span><span id="lossPct" class="data" style="color:#C9A55C">0 %</span><span>Muy sucio</span>
+        </div>
+      </div>
+
+      <div class="readout">
+        <span class="eyebrow">La suciedad te cuesta cada año</span>
+        <strong class="lead-num data" id="euroRange">0 €</strong>
+        <p class="lead-cap" id="leadCap">Ajusta los datos de la izquierda para ver tu estimación.</p>
+
+        <div class="stats">
+          <div class="stat"><b id="statKwh">0 kWh</b><span>Energía que no llega a tu casa por la suciedad</span></div>
+          <div class="stat"><b id="statDays">0 días</b><span>Equivale a tener la instalación parada</span></div>
+          <div class="stat"><b id="statCost">0 €</b><span>Coste estimado de las limpiezas</span></div>
+          <div class="stat"><b id="statNet">0 €</b><span>Balance neto en tu bolsillo</span></div>
+        </div>
+
+        <p class="eyebrow" id="recoBadge" style="margin:16px 0 0;color:#C9A55C"></p>
+
+        <button class="cta" id="openGate" type="button">Quiero el informe y un presupuesto</button>
+        <p class="cta-note">Te lo envía <span id="brandName">la empresa</span> por email. Sin llamadas insistentes.</p>
+      </div>
+
+      <!-- ============ CAPTURA DE LEAD ============ -->
+      <form class="gate" id="gate" hidden novalidate>
+        <h3>Recibe el desglose completo</h3>
+        <p class="gsub">Te enviamos el cálculo detallado y, si quieres, un presupuesto de limpieza para tu instalación.</p>
+
+        <div class="field">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" name="nombre" autocomplete="name" maxlength="80" placeholder="Tu nombre" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" maxlength="120" placeholder="tu@email.com" required>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="tel">Teléfono <span style="opacity:.6">(opcional)</span></label>
+            <input type="tel" id="tel" name="tel" autocomplete="tel" maxlength="20" placeholder="600 000 000">
+          </div>
+          <div class="field">
+            <label for="cp">Código postal</label>
+            <input type="text" id="cp" name="cp" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="28001" required>
+          </div>
+        </div>
+
+        <!-- trampa anti-bots: invisible y fuera del orden de tabulación -->
+        <div class="hp" aria-hidden="true">
+          <label for="empresa_web">No rellenar</label>
+          <input type="text" id="empresa_web" name="empresa_web" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div id="captcha"></div>
+
+        <div class="consent">
+          <input type="checkbox" id="consent" required>
+          <label for="consent">
+            Acepto que <span class="brandNameInline">la empresa</span> trate mis datos para responderme a esta solicitud,
+            según su <a id="privacyLink" href="#" target="_blank" rel="noopener noreferrer">política de privacidad</a>.
+          </label>
+        </div>
+        <div class="consent">
+          <input type="checkbox" id="marketing">
+          <label for="marketing">Quiero recibir también consejos de mantenimiento y ofertas. (Opcional)</label>
+        </div>
+
+        <button class="cta" id="send" type="submit">Enviar y ver el desglose</button>
+        <p class="cta-note">Nunca compartimos tu email con terceros.</p>
+        <div class="msg" id="msg" role="status"></div>
+      </form>
+    </section>
+  </div>
+
+  <!-- ============ DESGLOSE (tras enviar) ============ -->
+  <section class="card breakdown" id="breakdown" aria-labelledby="h-desglose">
+    <span class="eyebrow" id="h-desglose">Cómo sale el número</span>
+    <div class="brow"><span>Producción estimada sin suciedad</span><b id="bProd">–</b></div>
+    <div class="brow"><span>Pérdida media anual si no se limpia</span><b id="bLoss">–</b></div>
+    <div class="brow"><span>Pérdida media anual limpiando <span id="bFreq">2</span> veces al año</span><b id="bLoss2">–</b></div>
+    <div class="brow"><span>Energía recuperada</span><b id="bKwh">–</b></div>
+    <div class="brow"><span>Valor de esa energía</span><b id="bValue">–</b></div>
+    <div class="brow"><span>Coste por limpieza (<span id="bFreq2">2</span> al año)</span><b id="bCost">–</b></div>
+    <div class="brow total"><span>Ahorro neto anual</span><b id="bNet">–</b></div>
+    <div class="brow"><span>Energía recuperada en 10 años</span><b id="bTen">–</b></div>
+    <p class="disclaimer">
+      Además del dinero, la suciedad adherida (deyecciones de aves, hojas, líquenes) genera puntos calientes que
+      degradan las células de forma permanente y pueden invalidar la garantía del fabricante. Esto no está
+      incluido en el cálculo.
+    </p>
+  </section>
+
+  <p class="disclaimer">
+    Estimación orientativa basada en modelos de ensuciamiento (soiling) y en la producción media de tu zona.
+    Los valores reales dependen de la orientación, sombras, tipo de suciedad y estado del inversor.
+    No sustituye a una revisión en tu tejado.
+  </p>
+  <p class="legal-foot" id="legalFoot"></p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     1. CONFIGURACIÓN SEGURA
+     Ningún parámetro de la URL se inyecta como HTML.
+     El logo, la marca y el enlace legal se piden al backend
+     con la clave pública para que nadie pueda suplantarlos.
+     ========================================================= */
+  var qs = new URLSearchParams(location.search);
+  var API = "https://api.tu-dominio.com";      // <-- tu backend
+  var KEY = safeKey(qs.get("k"));
+
+  var CFG = {
+    brand:  "la empresa",
+    accent: "#0B63CE",
+    logo:   "",
+    privacy:"",
+    // Tarifa de limpieza del instalador. Escalonada por kWp porque el precio
+    // por vatio baja mucho en instalaciones grandes.
+    costBase: 35,
+    costMin: 85,
+    costTiers: [[10, 8], [40, 5], [150, 3.5], [1e9, 2.2]]   // [hasta kWp, €/kWp]
+  };
+
+  function cleaningCost(kwp){
+    var rest = kwp, total = CFG.costBase, prev = 0;
+    for(var i = 0; i < CFG.costTiers.length && rest > 0; i++){
+      var span = Math.min(rest, CFG.costTiers[i][0] - prev);
+      total += span * CFG.costTiers[i][1];
+      rest -= span;
+      prev = CFG.costTiers[i][0];
+    }
+    return Math.max(CFG.costMin, total);
+  }
+
+  function safeKey(v){ return (v && /^[A-Za-z0-9_-]{8,48}$/.test(v)) ? v : ""; }
+  function safeHex(v){
+    if(!v) return null;
+    v = String(v).replace(/^#/,"");
+    return /^[0-9a-fA-F]{6}$/.test(v) ? "#"+v : null;
+  }
+  function safeUrl(v){
+    try{
+      var u = new URL(v);
+      return u.protocol === "https:" ? u.href : null;
+    }catch(e){ return null; }
+  }
+
+  function applyTheme(){
+    var root = document.documentElement.style;
+    root.setProperty("--accent", CFG.accent);
+    root.setProperty("--on-accent", contrastOn(CFG.accent));
+    root.setProperty("--accent-soft", hexToRgba(CFG.accent, .10));
+
+    // textContent, nunca innerHTML
+    document.getElementById("brandName").textContent = CFG.brand;
+    Array.prototype.forEach.call(document.querySelectorAll(".brandNameInline"), function(el){
+      el.textContent = CFG.brand;
+    });
+    document.getElementById("legalFoot").textContent =
+      "Calculadora facilitada por " + CFG.brand + ".";
+
+    var logo = document.getElementById("brandLogo");
+    if(CFG.logo){ logo.src = CFG.logo; logo.alt = CFG.brand; logo.hidden = false; }
+
+    var pl = document.getElementById("privacyLink");
+    if(CFG.privacy){ pl.href = CFG.privacy; } else { pl.removeAttribute("href"); }
+  }
+
+  function hexToRgba(hex,a){
+    var n = parseInt(hex.slice(1),16);
+    return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")";
+  }
+  function contrastOn(hex){
+    var n = parseInt(hex.slice(1),16);
+    var c = [((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255].map(function(v){
+      return v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4);
+    });
+    var L = .2126*c[0] + .7152*c[1] + .0722*c[2];
+    return L > .45 ? "#0E1620" : "#FFFFFF";
+  }
+
+  // Vista previa local (solo si no hay clave): permite maquetar sin backend
+  if(!KEY){    var pc = safeHex(qs.get("c")); if(pc) CFG.accent = pc;
+    var pb = qs.get("brand"); if(pb) CFG.brand = String(pb).slice(0,40);
+    var plg = safeUrl(qs.get("logo")); if(plg) CFG.logo = plg;
+  }
+  applyTheme();
+
+  // hd=0 oculta la cabecera: la página que incrusta ya pone su propio titular
+  if(qs.get("hd") === "0"){
+    var hdEl = document.querySelector(".head");
+    if(hdEl) hdEl.hidden = true;
+  }
+
+  if(KEY){
+    fetch(API + "/v1/config?k=" + encodeURIComponent(KEY), {credentials:"omit"})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if(!d) return;
+        CFG.brand   = String(d.brand || CFG.brand).slice(0,40);
+        CFG.accent  = safeHex(d.accent) || CFG.accent;
+        CFG.logo    = safeUrl(d.logo) || "";
+        CFG.privacy = safeUrl(d.privacy) || "";
+        if(typeof d.costBase === "number") CFG.costBase = clamp(d.costBase, 0, 500);
+        if(typeof d.costMin  === "number") CFG.costMin  = clamp(d.costMin, 0, 2000);
+        if(Array.isArray(d.costTiers) && d.costTiers.length) CFG.costTiers = d.costTiers;
+        applyTheme(); compute();
+      })
+      .catch(function(){ /* silencioso: la calculadora sigue funcionando */ });
+  }
+
+  /* =========================================================
+     2. MODELO DE CÁLCULO
+     ========================================================= */
+  // Cada zona lleva su producción, su lluvia (que limpia sola) y la velocidad
+  // a la que se acumula la suciedad entre lluvias.
+  var ZONE = {
+    norte:    { y:1100, rain:0.72, tau:4.5 },
+    centro:   { y:1450, rain:1.00, tau:3.5 },
+    levante:  { y:1520, rain:1.12, tau:3.2 },
+    sur:      { y:1620, rain:1.15, tau:3.0 },
+    canarias: { y:1680, rain:1.25, tau:2.8 }
+  };
+  // Pérdida máxima de saturación (%) por entorno
+  var ENV   = { residencial:6, urbana:9, costa:10, agricola:14, industrial:18, ganaderia:22 };
+  var TILT  = { plano:1.5, baja:1.15, media:1.0, alta:.85 };
+
+  var eur = new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+  var num = new Intl.NumberFormat("es-ES",{maximumFractionDigits:0});
+  var num1= new Intl.NumberFormat("es-ES",{minimumFractionDigits:1,maximumFractionDigits:1});
+
+  var $ = function(id){ return document.getElementById(id); };
+  var picked = function(name){
+    var el = document.querySelector('input[name="'+name+'"]:checked');
+    return el ? el.value : null;
+  };
+
+  var R = {};   // último resultado
+
+  // Dibuja la matriz de células una sola vez
+  (function drawPanel(){
+    var cw = 45, ch = 36.5, gx = 4, gy = 4, x0 = 25, y0 = 19;
+    var cells = "", bus = "";
+    for(var j = 0; j < 4; j++){
+      for(var i = 0; i < 6; i++){
+        var x = x0 + i*(cw+gx), y = y0 + j*(ch+gy);
+        cells += '<rect x="'+x+'" y="'+y+'" width="'+cw+'" height="'+ch+'" rx="2.5"/>';
+        for(var b = 1; b <= 3; b++){
+          var bx = x + cw*b/4;
+          bus += '<path d="M'+bx+' '+y+'V'+(y+ch)+'"/>';
+        }
+      }
+    }
+    document.getElementById("cells").innerHTML = cells;
+    document.getElementById("busbars").innerHTML = bus;
+  })();
+
+  function compute(){
+    var kwp   = parseFloat($("kwp").value);
+    var zona  = $("zona").value;
+    var env   = $("entorno").value;
+    var tilt  = picked("tilt");
+    var meses = parseInt($("meses").value,10);
+    var freqSel = picked("freq");
+    var auto  = parseInt($("auto").value,10)/100;
+    var pImp  = clamp(parseFloat($("pImport").value) || .20, .05, 1);
+    var pExp  = clamp(parseFloat($("pExport").value) || .06, 0, 1);
+
+    var Z    = ZONE[zona];
+    var tau  = Z.tau;
+    var Lmax = Math.min(30, ENV[env] * TILT[tilt] * Z.rain);
+
+    var lossNow  = Lmax * (1 - Math.exp(-meses/tau));           // ahora mismo
+    var avgDirty = Lmax * 0.95;                                  // media anual sin limpiar
+    var prod     = kwp * Z.y;                                    // kWh/año teóricos
+    var price    = auto*pImp + (1-auto)*pExp;
+    var costOne  = cleaningCost(kwp);
+
+    // media de suciedad limpiando cada N meses
+    function avgWith(f){
+      var N = 12/f;
+      return Lmax * (1 - (tau/N)*(1 - Math.exp(-N/tau)));
+    }
+    // frecuencia que deja más dinero en el bolsillo del propietario
+    var bestF = 1, bestNet = -Infinity;
+    for(var f = 1; f <= 4; f++){
+      var nf = prod * Math.max(0, avgDirty - avgWith(f))/100 * price - costOne*f;
+      if(nf > bestNet){ bestNet = nf; bestF = f; }
+    }
+
+    var freq     = (freqSel === "auto") ? bestF : parseInt(freqSel, 10);
+    var avgClean = avgWith(freq);
+    var recovPct = Math.max(0, avgDirty - avgClean);
+    var kwhRecov = prod * recovPct/100;
+    var value    = kwhRecov * price;
+    var costYear = costOne * freq;
+    var net      = value - costYear;
+
+    // lo que cuesta la suciedad si nunca se limpia
+    var kwhLost   = prod * avgDirty/100;
+    var costDirt  = kwhLost * price;
+    var days      = kwhLost / (prod/365);
+
+    R = { kwp:kwp, prod:prod, lossNow:lossNow, avgDirty:avgDirty, avgClean:avgClean,
+          recovPct:recovPct, kwhRecov:kwhRecov, value:value, costOne:costOne, costYear:costYear,
+          kwhLost:kwhLost, costDirt:costDirt,
+          net:net, days:days, freq:freq, bestF:bestF, bestNet:bestNet,
+          zona:zona, env:env, tilt:tilt, meses:meses, price:price };
+
+    render();
+  }
+
+  function clamp(v,a,b){ return Math.min(b, Math.max(a,v)); }
+
+  function render(){
+    // etiquetas de controles
+    $("kwpVal").textContent   = num1.format(R.kwp) + " kWp";
+    $("nPanels").textContent  = Math.max(1, Math.round(R.kwp*1000/450));
+    $("mesesVal").textContent = R.meses + (R.meses === 1 ? " mes" : " meses");
+    $("autoVal").textContent  = $("auto").value + " %";
+
+    // panel sucio
+    var sat = clamp(R.lossNow/22, 0, 1);
+    $("dustLayer").setAttribute("opacity", (sat*0.92).toFixed(2));
+    $("birdGroup").setAttribute("opacity", (clamp((R.lossNow-9)/11,0,1)*0.85).toFixed(2));
+    $("meterFill").style.width = (clamp(R.lossNow/25,0,1)*100).toFixed(0) + "%";
+    $("lossPct").textContent = num1.format(R.lossNow) + " % de pérdida ahora";
+
+    // lectura principal, siempre como horquilla honesta
+    var lo = R.costDirt*0.75, hi = R.costDirt*1.3;
+    $("euroRange").textContent = num.format(lo) + "–" + num.format(hi) + " €";
+
+    var lim = R.freq + " limpieza" + (R.freq>1 ? "s" : "");
+    var cap = "Con " + lim + " al año recuperas unos " + eur.format(R.value) + " de esa pérdida. ";
+    if(R.net > 40){
+      cap += "Descontando el coste, te quedan " + eur.format(R.net) + " a favor.";
+    } else if(R.net > -60){
+      cap += "Casi cubre el coste, y además evitas los puntos calientes que degradan las células.";
+    } else {
+      cap += "Aquí el retorno en energía es pequeño: el valor está en proteger los paneles y la garantía.";
+    }
+    $("leadCap").textContent = cap;
+    $("recoBadge").textContent = "Recomendado: " + R.bestF + " limpieza" + (R.bestF>1?"s":"") + " al año";
+
+    $("statKwh").textContent  = num.format(R.kwhLost) + " kWh";
+    $("statDays").textContent = num.format(R.days) + (Math.round(R.days)===1 ? " día" : " días");
+    $("statCost").textContent = eur.format(R.costYear);
+    $("statNet").textContent  = (R.net>=0 ? "+" : "") + eur.format(R.net);
+    $("statNet").style.color  = R.net >= 0 ? "#7FE0A3" : "#F0B4B4";
+
+    // desglose
+    $("bProd").textContent  = num.format(R.prod) + " kWh";
+    $("bLoss").textContent  = num1.format(R.avgDirty) + " %";
+    $("bLoss2").textContent = num1.format(R.avgClean) + " %";
+    $("bFreq").textContent  = R.freq;
+    $("bKwh").textContent   = num.format(R.kwhRecov) + " kWh";
+    $("bValue").textContent = eur.format(R.value);
+    $("bFreq2").textContent = R.freq;
+    $("bCost").textContent  = "− " + eur.format(R.costOne) + " × " + R.freq;
+    $("bNet").textContent   = (R.net>=0 ? "+" : "") + eur.format(R.net);
+    $("bTen").textContent   = num.format(R.kwhRecov*10) + " kWh · " + eur.format(R.value*10);
+
+    postHeight();
+  }
+
+  // recalcular ante cualquier cambio
+  Array.prototype.forEach.call(
+    document.querySelectorAll("#kwp,#zona,#entorno,#meses,#auto,#pImport,#pExport,input[name=tilt],input[name=freq]"),
+    function(el){ el.addEventListener("input", compute); el.addEventListener("change", compute); }
+  );
+
+  /* =========================================================
+     3. CAPTURA DE LEAD (anti-spam en cliente + servidor)
+     ========================================================= */
+  var openedAt = 0;
+  var sessionToken = "";
+
+  $("openGate").addEventListener("click", function(){
+    var g = $("gate");
+    g.hidden = false;
+    this.setAttribute("hidden","");
+    openedAt = Date.now();
+    $("nombre").focus();
+    postHeight();
+    // nonce firmado por el servidor: sin él, el backend rechaza el envío
+    if(KEY){
+      fetch(API + "/v1/session?k=" + encodeURIComponent(KEY), {credentials:"omit"})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){ if(d && d.token) sessionToken = d.token; })
+        .catch(function(){});
+    }
+  });
+
+  function showMsg(kind, text){
+    var m = $("msg");
+    m.className = "msg " + kind;
+    m.textContent = text;   // textContent: sin riesgo de inyección
+    postHeight();
+  }
+
+  var EMAIL_RE = /^[^\s@]{1,64}@[^\s@.]+(\.[^\s@.]+)+$/;
+
+  $("gate").addEventListener("submit", function(ev){
+    ev.preventDefault();
+
+    var nombre = $("nombre").value.trim();
+    var email  = $("email").value.trim().toLowerCase();
+    var tel    = $("tel").value.trim();
+    var cp     = $("cp").value.trim();
+
+    if(nombre.length < 2)            return showMsg("err","Escribe tu nombre para poder dirigirnos a ti.");
+    if(!EMAIL_RE.test(email))        return showMsg("err","Revisa el email: parece que falta algo.");
+    if(!/^\d{5}$/.test(cp))          return showMsg("err","El código postal son 5 dígitos.");
+    if(tel && !/^[\d\s+().-]{6,20}$/.test(tel)) return showMsg("err","Ese teléfono no parece válido.");
+    if(!$("consent").checked)        return showMsg("err","Necesitamos tu permiso para tratar los datos.");
+    if($("empresa_web").value !== "") return;                  // bot: falla en silencio
+    if(Date.now() - openedAt < 3000) return showMsg("err","Un momento, revisa los datos antes de enviar.");
+
+    var btn = $("send");
+    btn.disabled = true;
+    btn.textContent = "Enviando…";
+
+    var payload = {
+      k: KEY,
+      token: sessionToken,
+      captcha: (window.turnstile && window.turnstile.getResponse) ? window.turnstile.getResponse() : "",
+      hp: $("empresa_web").value,
+      elapsed: Date.now() - openedAt,
+      lead: { nombre:nombre, email:email, tel:tel, cp:cp,
+              marketing: $("marketing").checked, consent:true },
+      calc: {
+        kwp:R.kwp, zona:R.zona, entorno:R.env, inclinacion:R.tilt,
+        meses:R.meses, limpiezasAnio:R.freq,
+        perdidaActualPct:+R.lossNow.toFixed(1),
+        kwhRecuperables:Math.round(R.kwhRecov),
+        valorAnualEur:Math.round(R.value),
+        costeLimpiezasEur:Math.round(R.costYear),
+        netoEur:Math.round(R.net)
+      }
+    };
+
+    fetch(API + "/v1/lead", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      credentials:"omit",
+      body: JSON.stringify(payload)
+    })
+    .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(res){
+      if(!res.ok) throw new Error((res.d && res.d.code) || "error");
+      var gate = $("gate");
+      var msg  = $("msg");
+      gate.replaceChildren(msg);              // retira los campos, conserva el aviso
+      msg.className = "msg ok";
+      msg.textContent = "Listo. Te hemos enviado el desglose a " + email + ".";
+      $("breakdown").classList.add("show");
+      $("breakdown").scrollIntoView({behavior:"smooth", block:"start"});
+      postHeight();
+    })
+    .catch(function(){
+      btn.disabled = false;
+      btn.textContent = "Enviar y ver el desglose";
+      showMsg("err","No hemos podido enviarlo. Inténtalo de nuevo en un minuto.");
+    });
+  });
+
+  /* =========================================================
+     4. ALTURA DEL IFRAME
+     Solo enviamos un número. Nunca ejecutamos nada que venga
+     del padre y no leemos window.parent.
+     ========================================================= */
+  var lastH = 0;
+  function postHeight(){
+    requestAnimationFrame(function(){
+      var h = Math.ceil(document.documentElement.getBoundingClientRect().height) + 8;
+      if(Math.abs(h - lastH) < 4) return;
+      lastH = h;
+      try{ parent.postMessage({ source:"solarcalc", type:"height", height:h }, "*"); }catch(e){}
+    });
+  }
+  window.addEventListener("resize", postHeight);
+  if(window.ResizeObserver){ new ResizeObserver(postHeight).observe(document.body); }
+
+  compute();
+  postHeight();
+})();
+</script>
+</body>
+</html>

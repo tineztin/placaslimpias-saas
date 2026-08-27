@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculadora embebible | PlacasLimpias</title>
+<style>
+:root{
+  --accent:#0B63CE; --on-accent:#fff; --accent-soft:rgba(11,99,206,.09);
+  --ink:#0E1620; --ink-2:#33414F; --ink-3:#6B7A89;
+  --paper:#EDF1F4; --card:#fff; --line:#D6DDE4;
+  --fs-ui:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--fs-ui);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:9}
+header .wrap{display:flex;align-items:center;height:58px}
+.logo{font-weight:700;font-size:17px;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--accent)}
+nav{margin-left:auto;display:flex;gap:20px;font-size:14px}
+nav a{color:var(--ink-2);text-decoration:none}
+nav a:hover{color:var(--accent)}
+@media(max-width:640px){nav{display:none}}
+
+section{padding:50px 0}
+section.alt{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+h1{font-size:clamp(28px,5vw,42px);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px}
+h2{font-size:clamp(22px,3.5vw,28px);letter-spacing:-.01em;margin:0 0 8px;line-height:1.2}
+.sub{font-size:17px;color:var(--ink-2);max-width:60ch;margin:0}
+.lede{color:var(--ink-2);max-width:65ch;margin:0 0 22px}
+
+.grid{display:grid;grid-template-columns:1fr;gap:30px;margin-top:26px}
+@media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px}
+section.alt .card{background:var(--paper)}
+
+.demo-frame{width:100%;border:0;display:block;background:transparent;border-radius:10px;min-height:900px}
+
+.pasos{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:22px}
+.paso{border-left:3px solid var(--accent);padding-left:16px}
+.paso b{display:block;font-size:14px;color:var(--accent);margin-bottom:6px}
+.paso h3{margin:0 0 6px;font-size:16px}
+.paso p{margin:0;font-size:14px;color:var(--ink-3);line-height:1.5}
+
+.datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:18px}
+.dato{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+section.alt .dato{background:var(--paper)}
+.dato b{display:block;font:600 22px/1 ui-monospace,Menlo,monospace;margin-bottom:4px}
+.dato span{font-size:12.5px;color:var(--ink-3);line-height:1.4}
+
+.cta{background:var(--accent);color:var(--on-accent);padding:13px 20px;border-radius:9px;text-decoration:none;font-weight:650;display:inline-block;margin-top:6px}
+.cta:hover{filter:brightness(1.08)}
+
+.code{background:#0E1620;color:#C9D6E2;border-radius:10px;padding:16px;overflow-x:auto;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.5;margin-top:12px}
+code{font-family:inherit;color:#B9E0FF}
+
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:18px}
+.feature{padding:14px;border-radius:8px;border:1px solid var(--line)}
+.feature::before{content:"✓";color:var(--accent);font-weight:700;margin-right:8px}
+
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+table th{text-align:left;font:500 12px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding:10px 0;border-bottom:2px solid var(--line)}
+table td{padding:10px 0;border-bottom:1px solid var(--line)}
+table td:last-child{text-align:right}
+
+footer{padding:30px 0 40px;font-size:13px;color:var(--ink-3);border-top:1px solid var(--line);text-align:center}
+footer a{color:var(--ink-2)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="logo" href="#">Placas<span>Limpias</span></a>
+  <nav>
+    <a href="#demo">Demo</a>
+    <a href="#como">Cómo funciona</a>
+    <a href="#precios">Precios</a>
+  </nav>
+</div></header>
+
+<main>
+<section><div class="wrap">
+  <h1>Captura contactos con una calculadora en tu web</h1>
+  <p class="sub">Incrusta nuestra calculadora de pérdidas por suciedad en tu web. Tus clientes descubren cuánto dinero pierden y tú capturas sus datos. Sin código.</p>
+  <a class="cta" href="#demo">Ver demo →</a>
+</div></section>
+
+<section class="alt" id="demo"><div class="wrap">
+  <h2>Así se ve en tu web</h2>
+  <p class="lede">Esta calculadora se puede personalizar con tus colores, logo y tarifas. Se incrusta en cualquier web en menos de un minuto.</p>
+  <iframe class="demo-frame" src="/calculadora.html?brand=SolarClean%20Barcelona&c=E8590C&hd=0" title="Demo de calculadora incrustada"></iframe>
+  <script>
+  window.addEventListener("message", function(ev){
+    if(ev.source !== document.querySelector(".demo-frame").contentWindow) return;
+    var d = ev.data;
+    if(!d || d.source !== "solarcalc" || d.type !== "height") return;
+    var h = Number(d.height);
+    if(isFinite(h)) document.querySelector(".demo-frame").height = Math.min(4000, Math.max(560, Math.round(h)));
+  });
+  </script>
+</div></section>
+
+<section id="como"><div class="wrap">
+  <h2>Tres pasos</h2>
+  <div class="pasos">
+    <div class="paso">
+      <b>PASO 1</b>
+      <h3>Personaliza</h3>
+      <p>Configura tu marca, colores, logo y tarifas desde un panel. Todo visual, sin código.</p>
+    </div>
+    <div class="paso">
+      <b>PASO 2</b>
+      <h3>Incrusta</h3>
+      <p>Pegamos dos líneas de HTML en tu web. Aparece la calculadora en cualquier página.</p>
+    </div>
+    <div class="paso">
+      <b>PASO 3</b>
+      <h3>Recibe contactos</h3>
+      <p>Cuando alguien calcula su pérdida, tú recibes el nombre, email y la estimación por email y WhatsApp.</p>
+    </div>
+  </div>
+  <div class="code"><code>&lt;div data-calc="pk_tu_clave"&gt;&lt;/div&gt;
+&lt;script src="https://placaslimpias.es/embed.js"&gt;&lt;/script&gt;</code></div>
+  <p style="font-size:13px;color:var(--ink-3);margin-top:8px">Eso es todo lo que necesitas pegar.</p>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <h2>Qué capta</h2>
+  <p class="lede">No es solo un nombre y teléfono. La calculadora genera información que vosotros necesitáis para presupuestar.</p>
+  <div class="datos">
+    <div class="dato"><b>kWp</b><span>Potencia de la instalación</span></div>
+    <div class="dato"><b>Zona</b><span>Producción solar estimada</span></div>
+    <div class="dato"><b>Entorno</b><span>Urbano, agrícola, industrial…</span></div>
+    <div class="dato"><b>Meses sin limpiar</b><span>Para estimar suciedad actual</span></div>
+    <div class="dato"><b>€ estimado</b><span>Ticket que podría llevar el trabajo</span></div>
+    <div class="dato"><b>Email + teléfono</b><span>Del interesado, verificado</span></div>
+  </div>
+</div></section>
+
+<section id="precios"><div class="wrap">
+  <h2>Planes</h2>
+  <p class="lede">Sin permanencia. Cancela cuando quieras.</p>
+  
+  <div class="grid" style="margin-top:26px">
+    <div class="card">
+      <h3 style="margin:0 0 4px">Básico</h3>
+      <p style="margin:0 0 14px;color:var(--ink-3);font-size:14px">Para empezar</p>
+      <b style="font-size:28px;color:var(--accent)">39 €/mes</b>
+      <div class="features" style="margin-top:16px">
+        <div class="feature">Calculadora personalizada</div>
+        <div class="feature">Tu logo y colores</div>
+        <div class="feature">Notificación por email</div>
+        <div class="feature">Hasta 50 contactos/mes</div>
+      </div>
+      <a class="cta" href="mailto:hola@placaslimpias.es?subject=Interesado%20en%20plan%20B%C3%A1sico">Empezar →</a>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 4px">Profesional</h3>
+      <p style="margin:0 0 14px;color:var(--ink-3);font-size:14px">Recomendado</p>
+      <b style="font-size:28px;color:var(--accent)">79 €/mes</b>
+      <div class="features" style="margin-top:16px">
+        <div class="feature">Todo del plan básico</div>
+        <div class="feature">Dashboard de contactos</div>
+        <div class="feature">Notificación por WhatsApp</div>
+        <div class="feature">Integración con tu CRM</div>
+        <div class="feature">Contactos ilimitados</div>
+      </div>
+      <a class="cta" href="mailto:hola@placaslimpias.es?subject=Interesado%20en%20plan%20Profesional">Empezar →</a>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 4px">Empresarial</h3>
+      <p style="margin:0 0 14px;color:var(--ink-3);font-size:14px">Sin branding nuestro</p>
+      <b style="font-size:28px;color:var(--accent)">149 €/mes</b>
+      <div class="features" style="margin-top:16px">
+        <div class="feature">Marca blanca total</div>
+        <div class="feature">Todo el plan profesional</div>
+        <div class="feature">Soporte prioritario</div>
+        <div class="feature">Subdominio propio</div>
+        <div class="feature">Análisis avanzado</div>
+      </div>
+      <a class="cta" href="mailto:hola@placaslimpias.es?subject=Interesado%20en%20plan%20Empresarial">Empezar →</a>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Casos de uso</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Empresa de limpieza</h3>
+      <p>Pone la calculadora en su home. Propietarios descubren cuánto pierden, saben qué esperar del presupuesto. Conversion sube un 300 %.</p>
+    </div>
+    <div class="card">
+      <h3>Instaladora solar</h3>
+      <p>La agrega a la web de seguimiento post-venta. Cliente ve cuánto vale la limpieza, se anima a contratarla. Revenue recurrente.</p>
+    </div>
+    <div class="card">
+      <h3>E-commerce de limpieza</h3>
+      <p>Tráfico para vender kits de limpieza o agua osmotizada. El cliente ya sabe que necesita limpiar. Lead x lead.</p>
+    </div>
+    <div class="card">
+      <h3>Agencia de mantenimiento</h3>
+      <p>Completa su oferta. "Nosotros instalamos, limpiamos y mantenemos todo." El ticket sube, la retención también.</p>
+    </div>
+  </div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <h2>Dudas frecuentes</h2>
+  <table>
+    <tr>
+      <th>Pregunta</th>
+      <th>Respuesta</th>
+    </tr>
+    <tr>
+      <td><b>¿Puedo personalizar los colores?</b></td>
+      <td>Sí. Desde el panel configuras todo: colores, logo, tarifas de limpieza.</td>
+    </tr>
+    <tr>
+      <td><b>¿Qué me cuesta integrarla?</b></td>
+      <td>Dos líneas de código. Nosotros nos encargamos de todo técnico. Te mandamos instrucciones y listo.</td>
+    </tr>
+    <tr>
+      <td><b>¿Cuándo me llegan los contactos?</b></td>
+      <td>Inmediato. Por email al momento que termina la calculadora. Plan Pro incluye WhatsApp para no perder ninguno.</td>
+    </tr>
+    <tr>
+      <td><b>¿Puedo ponerla en varias webs?</b></td>
+      <td>Sí. Si tienes blog, landing, WordPress, Wix, Shopify… la incrusta donde quieras.</td>
+    </tr>
+    <tr>
+      <td><b>¿Hay contrato de larga duración?</b></td>
+      <td>No. Mes a mes, cancelas cuando quieras. Sin penalización.</td>
+    </tr>
+    <tr>
+      <td><b>¿Cómo sé si vale la pena?</b></td>
+      <td>Prueba 30 días. Si no te funciona, devolución sin preguntas.</td>
+    </tr>
+  </table>
+</div></section>
+
+<section><div class="wrap">
+  <h2 style="text-align:center">¿Listo para captar más contactos?</h2>
+  <p style="text-align:center;color:var(--ink-2);max-width:100%;margin:0 auto">
+    <a class="cta" href="mailto:hola@placaslimpias.es?subject=Hola,%20quiero%20integrar%20la%20calculadora%20en%20mi%20web">Hablemos →</a>
+  </p>
+</div></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>PlacasLimpias © 2026 · <a href="#">Privacidad</a> · <a href="#">Términos</a></p>
+    <p>Tenemos oficinas en Barcelona. <a href="mailto:hola@placaslimpias.es">Escríbenos</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
