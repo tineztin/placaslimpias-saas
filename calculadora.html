@@ -257,10 +257,13 @@ details.adv > .adv-body{padding-top:14px}
 <div class="wrap">
 
   <header class="head">
-    <img id="brandLogo" alt="" hidden>
+    <div style="width:120px;height:40px;background:#E8EDF1;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:12px;font-weight:600;text-align:center;padding:0 8px">
+      <span id="logoPlaceholder">NOMBRE DE TU EMPRESA</span>
+      <img id="brandLogo" alt="" hidden>
+    </div>
     <div>
-      <h1 class="title">¿Cuánto te cuesta la suciedad de tus placas?</h1>
-      <p class="sub">Estimación en 30 segundos. Sin compromiso.</p>
+      <h1 class="title">Calculadora Solar</h1>
+      <p class="sub">¿Cuánto pierdes por la suciedad? Descúbrelo en 30 segundos.</p>
     </div>
   </header>
 
@@ -291,6 +294,12 @@ details.adv > .adv-body{padding-top:14px}
           <option value="canarias">Canarias</option>
         </select>
         <span class="hint">De aquí sacamos el sol que recibes y la lluvia que la limpia.</span>
+      </div>
+
+      <div class="field">
+        <label for="municipio">Municipio o población</label>
+        <input type="text" id="municipio" placeholder="Ej: Barcelona, Valencia, Sevilla..." aria-describedby="municipioHelp">
+        <span class="hint" id="municipioHelp">Nos ayuda a conocer el origen de tu contacto.</span>
       </div>
 
       <div class="field">
@@ -431,8 +440,8 @@ details.adv > .adv-body{padding-top:14px}
         <div class="stats">
           <div class="stat"><b id="statKwh">0 kWh</b><span>Energía que no llega a tu casa por la suciedad</span></div>
           <div class="stat"><b id="statDays">0 días</b><span>Equivale a tener la instalación parada</span></div>
-          <div class="stat"><b id="statCost">0 €</b><span>Coste estimado de las limpiezas</span></div>
-          <div class="stat"><b id="statNet">0 €</b><span>Balance neto en tu bolsillo</span></div>
+          <div class="stat" hidden><b id="statCost">0 €</b><span>Coste estimado de las limpiezas</span></div>
+          <div class="stat" hidden><b id="statNet">0 €</b><span>Balance neto en tu bolsillo</span></div>
         </div>
 
         <p class="eyebrow" id="recoBadge" style="margin:16px 0 0;color:#C9A55C"></p>
@@ -460,8 +469,8 @@ details.adv > .adv-body{padding-top:14px}
             <input type="tel" id="tel" name="tel" autocomplete="tel" maxlength="20" placeholder="600 000 000">
           </div>
           <div class="field">
-            <label for="cp">Código postal</label>
-            <input type="text" id="cp" name="cp" autocomplete="postal-code" inputmode="numeric" maxlength="5" placeholder="28001" required>
+            <label for="municipio_form">Municipio o población</label>
+            <input type="text" id="municipio_form" name="municipio" maxlength="80" placeholder="Barcelona, Valencia..." required>
           </div>
         </div>
 
@@ -803,6 +812,11 @@ details.adv > .adv-body{padding-top:14px}
     g.hidden = false;
     this.setAttribute("hidden","");
     openedAt = Date.now();
+    // Auto-llenar municipio desde el campo de entrada anterior
+    var municipio_input = $("municipio").value;
+    if(municipio_input){
+      $("municipio_form").value = municipio_input;
+    }
     $("nombre").focus();
     postHeight();
     // nonce firmado por el servidor: sin él, el backend rechaza el envío
