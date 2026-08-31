@@ -1,0 +1,24 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Calculadora Solar">
+  <defs>
+    <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E88E5"/>
+      <stop offset="100%" stop-color="#003d7a"/>
+    </linearGradient>
+    <linearGradient id="logoSun" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFC94A"/>
+      <stop offset="100%" stop-color="#FFA500"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="96" height="96" rx="22" fill="url(#logoBg)"/>
+  <g stroke="url(#logoSun)" stroke-width="9" stroke-linecap="round">
+    <line x1="82.5" y1="17.5" x2="90" y2="10"/>
+    <line x1="82.5" y1="46.5" x2="90" y2="54"/>
+    <line x1="53.5" y1="17.5" x2="46" y2="10"/>
+  </g>
+  <circle cx="68" cy="32" r="17" fill="url(#logoSun)"/>
+  <g transform="rotate(-6 50 68)">
+    <rect x="20" y="50" width="60" height="36" rx="6" fill="#FFFFFF" stroke="#003d7a" stroke-width="4"/>
+    <line x1="50" y1="50" x2="50" y2="86" stroke="#003d7a" stroke-width="3.5"/>
+    <line x1="20" y1="68" x2="80" y2="68" stroke="#003d7a" stroke-width="3.5"/>
+  </g>
+</svg>
