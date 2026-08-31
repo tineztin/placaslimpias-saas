@@ -285,22 +285,61 @@ details.adv > .adv-body{padding-top:14px}
       </div>
 
       <div class="field">
-        <label for="zona">¿Dónde está la instalación?</label>
-        <select id="zona">
-          <option value="norte">Norte y cornisa cantábrica</option>
-          <option value="centro" selected>Centro y meseta</option>
-          <option value="levante">Levante y Baleares</option>
-          <option value="sur">Sur (Andalucía, Extremadura)</option>
-          <option value="canarias">Canarias</option>
+        <label for="municipio">Municipio o población</label>
+        <select id="municipio">
+          <optgroup label="Norte y cornisa cantábrica">
+            <option value="bilbao">Bilbao, Vizcaya</option>
+            <option value="donostia">Donostia, Guipúzcoa</option>
+            <option value="vitoria">Vitoria, Álava</option>
+            <option value="pamplona">Pamplona, Navarra</option>
+            <option value="oviedo">Oviedo, Asturias</option>
+            <option value="santander">Santander, Cantabria</option>
+            <option value="leganes">Leganés, Asturias</option>
+          </optgroup>
+          <optgroup label="Centro y meseta">
+            <option value="madrid" selected>Madrid</option>
+            <option value="segovia">Segovia</option>
+            <option value="toledo">Toledo</option>
+            <option value="cuenca">Cuenca</option>
+            <option value="palencia">Palencia</option>
+            <option value="valladolid">Valladolid</option>
+            <option value="salamanca">Salamanca</option>
+            <option value="avila">Ávila</option>
+            <option value="burgos">Burgos</option>
+          </optgroup>
+          <optgroup label="Levante y Baleares">
+            <option value="valencia">Valencia</option>
+            <option value="castellon">Castellón</option>
+            <option value="alicante">Alicante</option>
+            <option value="murcia">Murcia</option>
+            <option value="almeria">Almería</option>
+            <option value="palma">Palma de Mallorca</option>
+            <option value="ibiza">Ibiza</option>
+          </optgroup>
+          <optgroup label="Sur (Andalucía, Extremadura)">
+            <option value="sevilla">Sevilla</option>
+            <option value="cordoba">Córdoba</option>
+            <option value="jaen">Jaén</option>
+            <option value="granada">Granada</option>
+            <option value="malaga">Málaga</option>
+            <option value="cadiz">Cádiz</option>
+            <option value="huelva">Huelva</option>
+            <option value="badajoz">Badajoz</option>
+            <option value="caceres">Cáceres</option>
+          </optgroup>
+          <optgroup label="Canarias">
+            <option value="laspalmas">Las Palmas de Gran Canaria</option>
+            <option value="tenerife">Tenerife</option>
+            <option value="lanzarote">Lanzarote</option>
+            <option value="fuerteventura">Fuerteventura</option>
+            <option value="lapalma">La Palma</option>
+          </optgroup>
         </select>
-        <span class="hint">De aquí sacamos el sol que recibes y la lluvia que la limpia.</span>
+        <span class="hint">Tu municipio. De aquí sacamos el sol que recibes y la lluvia que la limpia.</span>
       </div>
 
-      <div class="field">
-        <label for="municipio">Municipio o población</label>
-        <input type="text" id="municipio" placeholder="Ej: Barcelona, Valencia, Sevilla..." aria-describedby="municipioHelp">
-        <span class="hint" id="municipioHelp">Nos ayuda a conocer el origen de tu contacto.</span>
-      </div>
+      <!-- Campo oculto de zona, se rellena automáticamente -->
+      <input type="hidden" id="zona" value="centro">
 
       <div class="field">
         <label for="entorno">¿Qué hay alrededor de las placas?</label>
@@ -795,9 +834,26 @@ details.adv > .adv-body{padding-top:14px}
     postHeight();
   }
 
-  // recalcular ante cualquier cambio
+  // Mapeo: municipio → zona
+  var municipioZona = {
+    bilbao:"norte", donostia:"norte", vitoria:"norte", pamplona:"norte", oviedo:"norte", santander:"norte", leganes:"norte",
+    madrid:"centro", segovia:"centro", toledo:"centro", cuenca:"centro", palencia:"centro", valladolid:"centro", salamanca:"centro", avila:"centro", burgos:"centro",
+    valencia:"levante", castellon:"levante", alicante:"levante", murcia:"levante", almeria:"levante", palma:"levante", ibiza:"levante",
+    sevilla:"sur", cordoba:"sur", jaen:"sur", granada:"sur", malaga:"sur", cadiz:"sur", huelva:"sur", badajoz:"sur", caceres:"sur",
+    laspalmas:"canarias", tenerife:"canarias", lanzarote:"canarias", fuerteventura:"canarias", lapalma:"canarias"
+  };
+
+  // Actualizar zona automáticamente cuando cambia municipio
+  $("municipio").addEventListener("change", function(){
+    var mun = this.value;
+    var z = municipioZona[mun] || "centro";
+    $("zona").value = z;
+    compute();
+  });
+
+  // recalcular ante cualquier cambio (sin #zona que es hidden)
   Array.prototype.forEach.call(
-    document.querySelectorAll("#kwp,#zona,#entorno,#meses,#auto,#pImport,#pExport,input[name=tilt],input[name=freq]"),
+    document.querySelectorAll("#kwp,#entorno,#meses,#auto,#pImport,#pExport,input[name=tilt],input[name=freq]"),
     function(el){ el.addEventListener("input", compute); el.addEventListener("change", compute); }
   );
 
@@ -812,10 +868,11 @@ details.adv > .adv-body{padding-top:14px}
     g.hidden = false;
     this.setAttribute("hidden","");
     openedAt = Date.now();
-    // Auto-llenar municipio desde el campo de entrada anterior
-    var municipio_input = $("municipio").value;
-    if(municipio_input){
-      $("municipio_form").value = municipio_input;
+    // Auto-llenar municipio desde el selector anterior (captura el texto del option, no solo el value)
+    var municipioSelect = $("municipio");
+    var municipioText = municipioSelect.options[municipioSelect.selectedIndex].text;
+    if(municipioText){
+      $("municipio_form").value = municipioText;
     }
     $("nombre").focus();
     postHeight();

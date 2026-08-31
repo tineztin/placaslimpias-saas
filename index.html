@@ -1,15 +1,793 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Calculadora Solar</title>
-<style>
-body{margin:0;padding:0;background:#EDF1F4}
-iframe{width:100%;height:100vh;border:0;display:block}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Calculadora Solar: Herramienta SaaS para capturar leads de limpieza de placas solares. 9€/mes, sin permanencia.">
+  <meta name="keywords" content="calculadora solar, limpieza placas, leads, SaaS">
+  <meta name="author" content="Calculadora Solar">
+  <title>Calculadora Solar - Captura Leads de Limpieza Automáticamente</title>
+  <style>
+    :root {
+      --accent: #0066B2;
+      --accent-dark: #003d7a;
+      --accent-light: #E6F1FB;
+      --on-accent: #fff;
+      --ink: #0E1620;
+      --ink-2: #33414F;
+      --ink-3: #6B7A89;
+      --paper: #F8FAFB;
+      --card: #fff;
+      --line: #D6DDE4;
+      --success: #22A84A;
+      --warning: #FFA500;
+      --fs-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.6 var(--fs-ui);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 99;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    header .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .logo-accent {
+      color: var(--accent);
+    }
+
+    nav {
+      display: flex;
+      gap: 32px;
+      font-size: 14px;
+    }
+
+    nav a {
+      color: var(--ink-2);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: var(--accent);
+    }
+
+    @media (max-width: 640px) {
+      nav {
+        gap: 16px;
+        font-size: 12px;
+      }
+      header .wrap {
+        height: 56px;
+      }
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    /* Sections */
+    section {
+      padding: 80px 0;
+    }
+
+    section.alt {
+      background: var(--card);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    section.hero {
+      padding: 80px 0;
+      background: linear-gradient(135deg, var(--accent-light) 0%, var(--paper) 100%);
+    }
+
+    /* Typography */
+    h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin: 0 0 20px;
+      color: var(--ink);
+    }
+
+    h2 {
+      font-size: clamp(24px, 4vw, 36px);
+      letter-spacing: -0.01em;
+      margin: 0 0 16px;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+
+    h3 {
+      font-size: 18px;
+      margin: 0 0 12px;
+      color: var(--ink);
+    }
+
+    .sub {
+      font-size: 18px;
+      color: var(--ink-2);
+      max-width: 60ch;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--fs-ui);
+      margin-top: 16px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: var(--on-accent);
+      box-shadow: 0 4px 12px rgba(0, 102, 178, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 102, 178, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+      margin-top: 40px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 12px 24px rgba(0, 102, 178, 0.1);
+      transform: translateY(-4px);
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    /* Feature list */
+    .features {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0 0;
+    }
+
+    .features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 15px;
+      color: var(--ink-2);
+    }
+
+    .features li::before {
+      content: "✓";
+      color: var(--success);
+      font-weight: bold;
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    /* Hero section */
+    .hero-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-text h1 {
+      margin-bottom: 24px;
+    }
+
+    .hero-image {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 102, 178, 0.2);
+      background: var(--accent-light);
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-logo-overlay {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 200px;
+    }
+
+    .hero-logo-overlay svg {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+    }
+
+    .hero-logo-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .hero-logo-text .accent {
+      color: var(--accent);
+    }
+
+    @media (max-width: 768px) {
+      .hero-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .hero-logo-overlay {
+        top: 12px;
+        right: 12px;
+        padding: 12px;
+      }
+      .hero-image {
+        min-height: 300px;
+      }
+    }
+
+    /* Pricing */
+    .pricing-box {
+      background: var(--accent-light);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      margin: 32px 0;
+    }
+
+    .pricing-box .price {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 16px 0;
+    }
+
+    .pricing-box .period {
+      font-size: 14px;
+      color: var(--ink-2);
+    }
+
+    /* Calculator embed */
+    .calculator-section {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 40px;
+      margin: 40px 0;
+      border: 1px solid var(--line);
+    }
+
+    .calculator-section h3 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .calculator-frame {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px;
+      margin-top: 40px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--ink-2);
+      margin-top: 8px;
+    }
+
+    /* CTA Bar */
+    .cta-bar {
+      background: linear-gradient(135deg, var(--accent-light) 0%, #E0E9F5 100%);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 60px 0;
+      text-align: center;
+    }
+
+    .cta-bar h2 {
+      margin-bottom: 12px;
+    }
+
+    .cta-bar .sub {
+      margin-bottom: 24px;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--ink);
+      color: #fff;
+      padding: 60px 0 20px;
+      font-size: 13px;
+    }
+
+    footer .wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    footer h4 {
+      font-size: 14px;
+      margin: 0 0 12px;
+      font-weight: 600;
+    }
+
+    footer p {
+      margin: 0 0 8px;
+      line-height: 1.6;
+    }
+
+    footer a {
+      color: var(--accent-light);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 20px;
+      text-align: center;
+    }
+
+    .footer-bottom p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      section {
+        padding: 60px 0;
+      }
+      section.hero {
+        padding: 60px 0;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    /* Legal */
+    .legal-text {
+      font-size: 12px;
+      color: var(--ink-3);
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
-<iframe src="/demo.html" title="Calculadora Solar"></iframe>
+
+  <!-- Header -->
+  <header>
+    <div class="wrap">
+      <a href="https://calculadorasolar.top" class="logo-container">
+        <svg class="logo-icon" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="95" fill="#E6F1FB" stroke="#0066B2" stroke-width="2"/>
+          <g transform="translate(100, 60)">
+            <rect x="-30" y="-20" width="60" height="35" fill="none" stroke="#0066B2" stroke-width="2" rx="3"/>
+            <rect x="-28" y="-18" width="13" height="13" fill="#0066B2" opacity="0.7"/>
+            <rect x="-12" y="-18" width="13" height="13" fill="#0066B2" opacity="0.7"/>
+            <rect x="4" y="-18" width="13" height="13" fill="#0066B2" opacity="0.7"/>
+            <rect x="-28" y="-2" width="13" height="13" fill="#0066B2" opacity="0.5"/>
+            <rect x="-12" y="-2" width="13" height="13" fill="#0066B2" opacity="0.5"/>
+            <rect x="4" y="-2" width="13" height="13" fill="#0066B2" opacity="0.5"/>
+          </g>
+          <g transform="translate(100, 130)">
+            <rect x="-25" y="-20" width="50" height="35" fill="none" stroke="#0066B2" stroke-width="2" rx="3"/>
+            <rect x="-20" y="-15" width="40" height="10" fill="#0066B2" opacity="0.1" stroke="#0066B2" stroke-width="1"/>
+            <circle cx="-12" cy="5" r="3" fill="#0066B2" opacity="0.6"/>
+            <circle cx="0" cy="5" r="3" fill="#0066B2" opacity="0.6"/>
+            <circle cx="12" cy="5" r="3" fill="#0066B2" opacity="0.6"/>
+            <circle cx="-12" cy="15" r="3" fill="#0066B2" opacity="0.6"/>
+            <circle cx="0" cy="15" r="3" fill="#0066B2" opacity="0.6"/>
+            <circle cx="12" cy="15" r="3" fill="#0066B2" opacity="0.6"/>
+          </g>
+          <line x1="100" y1="80" x2="100" y2="110" stroke="#FFA500" stroke-width="2" stroke-dasharray="3,3"/>
+          <circle cx="100" cy="95" r="4" fill="#FFA500"/>
+        </svg>
+        <span class="logo-text">Calculadora <span class="logo-accent">Solar</span></span>
+      </a>
+      <nav>
+        <a href="#features">Características</a>
+        <a href="#pricing">Precios</a>
+        <a href="#demo">Demo</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="badge">Captura Leads Automáticamente</div>
+          <h1>La herramienta que genera contactos de limpieza por ti</h1>
+          <p class="sub">Tus clientes descubren cuánto pierden por placas sucias. Tú recibes el contacto con urgencia. Todos ganan.</p>
+          <ul class="features">
+            <li>Instalación en 5 minutos</li>
+            <li>Funciona en cualquier web</li>
+            <li>Leads cualificados garantizados</li>
+            <li>Sin permanencia, cancela cuando quieras</li>
+          </ul>
+          <a href="#pricing" class="btn btn-primary">→ Ver precios y activar</a>
+        </div>
+        <div class="hero-image">
+          <img src="https://images.unsplash.com/photo-1508707215824-e1038b44b354?w=600&q=80&auto=format&fit=crop" alt="Técnico inspeccionando paneles solares" style="width: 100%; height: 100%; object-fit: cover;"/>
+          <div class="hero-logo-overlay">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="100" cy="100" r="95" fill="#E6F1FB" stroke="#0066B2" stroke-width="2"/>
+              <g transform="translate(100, 60)">
+                <rect x="-30" y="-20" width="60" height="35" fill="none" stroke="#0066B2" stroke-width="2" rx="3"/>
+                <rect x="-28" y="-18" width="13" height="13" fill="#0066B2" opacity="0.7"/>
+                <rect x="-12" y="-18" width="13" height="13" fill="#0066B2" opacity="0.7"/>
+                <rect x="4" y="-18" width="13" height="13" fill="#0066B2" opacity="0.7"/>
+                <rect x="-28" y="-2" width="13" height="13" fill="#0066B2" opacity="0.5"/>
+                <rect x="-12" y="-2" width="13" height="13" fill="#0066B2" opacity="0.5"/>
+                <rect x="4" y="-2" width="13" height="13" fill="#0066B2" opacity="0.5"/>
+              </g>
+              <g transform="translate(100, 130)">
+                <rect x="-25" y="-20" width="50" height="35" fill="none" stroke="#0066B2" stroke-width="2" rx="3"/>
+                <rect x="-20" y="-15" width="40" height="10" fill="#0066B2" opacity="0.1" stroke="#0066B2" stroke-width="1"/>
+                <circle cx="-12" cy="5" r="3" fill="#0066B2" opacity="0.6"/>
+                <circle cx="0" cy="5" r="3" fill="#0066B2" opacity="0.6"/>
+                <circle cx="12" cy="5" r="3" fill="#0066B2" opacity="0.6"/>
+                <circle cx="-12" cy="15" r="3" fill="#0066B2" opacity="0.6"/>
+                <circle cx="0" cy="15" r="3" fill="#0066B2" opacity="0.6"/>
+                <circle cx="12" cy="15" r="3" fill="#0066B2" opacity="0.6"/>
+              </g>
+              <line x1="100" y1="80" x2="100" y2="110" stroke="#FFA500" stroke-width="2" stroke-dasharray="3,3"/>
+              <circle cx="100" cy="95" r="4" fill="#FFA500"/>
+            </svg>
+            <div class="hero-logo-text">Calculadora <span class="accent">Solar</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features">
+    <div class="wrap">
+      <h2>¿Por qué elegir Calculadora Solar?</h2>
+      <p class="sub">La solución completa para empresas de limpieza y mantenimiento de paneles solares</p>
+
+      <div class="grid">
+        <div class="card">
+          <h3>📊 Educación Automática</h3>
+          <p>Tus clientes ven exactamente cuánto pierden por placas sucias. La urgencia de limpiar es automática.</p>
+        </div>
+        <div class="card">
+          <h3>📝 Captura de Contactos Calificados</h3>
+          <p>Recibes nombre, email, teléfono, municipio y energía perdida estimada. Presupuesta en 5 minutos.</p>
+        </div>
+        <div class="card">
+          <h3>⚙️ Instalación Ultrarrápida</h3>
+          <p>2-5 minutos. Un código iframe. Sin cambiar tu web. Compatible con WordPress, Wix, Shopify, HTML puro.</p>
+        </div>
+        <div class="card">
+          <h3>📱 Responsive y Rápido</h3>
+          <p>Funciona perfectamente en móvil, tablet y desktop. Carga en menos de 1 segundo. UX profesional.</p>
+        </div>
+        <div class="card">
+          <h3>🎯 Segmentación por Zona</h3>
+          <p>Calcula según tu región: radiación solar, climatología, lluvia. Presupuestos realistas y competitivos.</p>
+        </div>
+        <div class="card">
+          <h3>💰 Precio Más Justo del Mercado</h3>
+          <p>9€+IVA al mes. Contactos ilimitados. Sin permanencia. Mejor ROI que cualquier plataforma de leads.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Section -->
+  <section class="alt" id="demo">
+    <div class="wrap">
+      <h2>Prueba la calculadora</h2>
+      <p class="sub">Esto es exactamente lo que verán tus clientes cuando entren en tu web:</p>
+
+      <div class="calculator-section">
+        <h3>Calculadora Solar - Vista Previa en Vivo</h3>
+        <div class="calculator-frame">
+          <iframe 
+            src="https://placaslimpias-saas.vercel.app/calculadora.html"
+            width="100%"
+            height="800"
+            frameborder="0"
+            style="display: block; border: none;">
+          </iframe>
+        </div>
+      </div>
+
+      <p style="text-align: center; color: var(--ink-2); font-size: 14px; margin-top: 20px;">
+        ↑ Esta calculadora se embebe en tu web. Captura los contactos automáticamente.
+      </p>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing">
+    <div class="wrap">
+      <h2>Precios Transparentes</h2>
+      <p class="sub">Un solo plan, sin sorpresas. Contactos ilimitados. Sin permanencia.</p>
+
+      <div style="max-width: 500px; margin: 0 auto;">
+        <div class="pricing-box">
+          <h3>Plan Profesional</h3>
+          <div class="price">9€<span style="font-size: 24px; color: var(--ink-2);">+IVA</span></div>
+          <div class="period">/ mes (10,89€ con IVA)</div>
+          
+          <ul class="features" style="text-align: left; margin-top: 24px;">
+            <li>Calculadora embebible en tu web</li>
+            <li>Contactos y leads ilimitados</li>
+            <li>Logo y colores personalizados</li>
+            <li>Email automático al recibir contacto</li>
+            <li>Sin contrato ni permanencia</li>
+            <li>Soporte por email</li>
+            <li>Actualizaciones incluidas</li>
+          </ul>
+
+          <!-- BOTÓN DE PAYPAL -->
+          <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=R7KSPCUJDEXMN" class="btn btn-primary" style="width: 100%; justify-content: center;">
+            ✓ Suscribirse ahora
+          </a>
+
+          <p style="font-size: 12px; color: var(--ink-2); margin-top: 16px; text-align: center;">
+            Pago seguro con PayPal. Acceso inmediato tras el pago.
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 32px;">
+          <p style="color: var(--ink-2); font-size: 14px;">
+            <strong>Servicios adicionales bajo demanda:</strong><br>
+            Integración CRM, notificación por WhatsApp, desarrollo personalizado, consultoría
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="alt">
+    <div class="wrap">
+      <h2>Resultados que generan ingresos</h2>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-number">374+</div>
+          <div class="stat-label">Empresas en base de datos</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">10-15%</div>
+          <div class="stat-label">Tasa de respuesta</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">1-3%</div>
+          <div class="stat-label">Conversión a cliente</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">7 días</div>
+          <div class="stat-label">ROI con primer cliente</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-bar">
+    <div class="wrap">
+      <h2>¿Listo para capturar más leads?</h2>
+      <p class="sub">Activa tu calculadora en 5 minutos. Recibe contactos desde hoy mismo.</p>
+      <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=R7KSPCUJDEXMN" class="btn btn-primary">
+        → Comenzar ahora (9€+IVA/mes)
+      </a>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section>
+    <div class="wrap">
+      <h2>Preguntas Frecuentes</h2>
+      
+      <div class="grid" style="grid-template-columns: 1fr; gap: 24px;">
+        <div class="card">
+          <h3>¿Cuánto tiempo tarda instalar?</h3>
+          <p>Entre 2 y 5 minutos. Te proporcionamos un código iframe que pegas en tu web. No es necesario cambiar tu código ni contratar desarrolladores.</p>
+        </div>
+
+        <div class="card">
+          <h3>¿Cómo recibo los contactos?</h3>
+          <p>Por email automático cada vez que un cliente completa la calculadora. Incluye: nombre, email, teléfono, municipio, energía perdida y presupuesto estimado.</p>
+        </div>
+
+        <div class="card">
+          <h3>¿Funciona en cualquier web?</h3>
+          <p>Sí. WordPress, Wix, Shopify, Squarespace, HTML puro, Webflow, etc. Cualquier plataforma que permita insertar HTML personalizado.</p>
+        </div>
+
+        <div class="card">
+          <h3>¿Puedo cancelar en cualquier momento?</h3>
+          <p>Completamente. Sin permanencia, sin penalización. Cancela tu suscripción en PayPal cuando quieras. Seguirás recibiendo leads hasta fin de mes.</p>
+        </div>
+
+        <div class="card">
+          <h3>¿Es seguro el pago?</h3>
+          <p>100% seguro. PayPal gestiona todos los pagos. Tú solo autorizas la suscripción una vez. Puedes cancelarla desde tu cuenta de PayPal.</p>
+        </div>
+
+        <div class="card">
+          <h3>¿Qué datos compartir?</h3>
+          <p>Solo tu nombre de empresa. Tus clientes ingresan sus datos en la calculadora (nombre, email, teléfono, municipio). Tú recibes los contactos en tu email privado.</p>
+        </div>
+
+        <div class="card">
+          <h3>¿Hay soporte?</h3>
+          <p>Sí. Soporte por email. Te ayudamos a instalar la calculadora, personalizar el branding y resolver cualquier duda técnica.</p>
+        </div>
+
+        <div class="card">
+          <h3>¿Puedo personalizar la calculadora?</h3>
+          <p>Sí. Logo, colores, textos... todo se puede ajustar. Contacta con nosotros para cambios personalizados más avanzados.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="wrap">
+      <div>
+        <h4>Calculadora Solar</h4>
+        <p><strong>Email:</strong> <a href="mailto:hola@calculadorasolar.top">hola@calculadorasolar.top</a></p>
+        <p><strong>Web:</strong> <a href="https://calculadorasolar.top">calculadorasolar.top</a></p>
+      </div>
+      <div>
+        <h4>Producto</h4>
+        <p><a href="#demo">Ver demo</a></p>
+        <p><a href="#pricing">Precios</a></p>
+        <p><a href="#features">Características</a></p>
+      </div>
+      <div>
+        <h4>Empresa</h4>
+        <p><a href="#privacidad">Política de privacidad</a></p>
+        <p><a href="#terminos">Términos de servicio</a></p>
+        <p><a href="mailto:hola@calculadorasolar.top">Contacto</a></p>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <p>Calculadora Solar © 2026</p>
+        <p class="legal-text">Software como Servicio (SaaS) para generación de leads. Cada cliente retiene todos los derechos sobre los datos de contacto recopilados.</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="wrap">
+        <p>© 2026 Calculadora Solar. Todos los derechos reservados. | <a href="#privacidad">Privacidad</a> | <a href="#terminos">Términos</a></p>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>
