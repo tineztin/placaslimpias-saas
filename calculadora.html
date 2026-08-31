@@ -1025,46 +1025,58 @@ details.adv > .adv-body{padding-top:14px}
 
   $("gate").addEventListener("submit", function(ev){
     ev.preventDefault();
-
-    var nombre    = $("nombre").value.trim();
-    var email     = $("email").value.trim().toLowerCase();
-    var tel       = $("tel").value.trim();
-    var municipio = $("municipio_form").value.trim();
-
-    if(nombre.length < 2)            return showMsg("err","Escribe tu nombre para poder dirigirnos a ti.");
-    if(!EMAIL_RE.test(email))        return showMsg("err","Revisa el email: parece que falta algo.");
-    if(municipio.length < 2)         return showMsg("err","Indica tu municipio o población.");
-    if(tel && !/^[\d\s+().-]{6,20}$/.test(tel)) return showMsg("err","Ese teléfono no parece válido.");
-    if(!$("consent").checked)        return showMsg("err","Necesitamos tu permiso para tratar los datos.");
-    if($("empresa_web").value !== "") return;                  // bot: falla en silencio
-    if(Date.now() - openedAt < 1500) return showMsg("err","Un momento, revisa los datos antes de enviar.");
-
     var btn = $("send");
-    btn.disabled = true;
-    btn.textContent = "Generando informe…";
 
-    var lead = { nombre:nombre, email:email, tel:tel, municipio:municipio,
-                 marketing: $("marketing").checked };
+    // Red de seguridad: cualquier fallo inesperado (bloqueador de scripts,
+    // API del navegador que falte, etc.) debe mostrar un aviso, nunca
+    // quedarse en silencio como antes.
+    try{
+      var nombre    = $("nombre").value.trim();
+      var email     = $("email").value.trim().toLowerCase();
+      var tel       = $("tel").value.trim();
+      var municipio = $("municipio_form").value.trim();
 
-    function finish(pdfOk){
-      var gate = $("gate");
-      var msg  = $("msg");
-      gate.replaceChildren(msg);              // retira los campos, conserva el aviso
-      msg.className = "msg ok";
-      msg.textContent = pdfOk
-        ? "Listo. Te hemos descargado el informe en PDF con el desglose completo."
-        : "Listo. Aquí tienes el desglose completo. También puedes enviarlo por email.";
-      var mailBtn = $("mailReport");
-      mailBtn.href = buildMailHref(lead);
-      mailBtn.hidden = false;
-      $("breakdown").classList.add("show");
-      $("breakdown").scrollIntoView({behavior:"smooth", block:"start"});
-      postHeight();
+      if(nombre.length < 2)            return showMsg("err","Escribe tu nombre para poder dirigirnos a ti.");
+      if(!EMAIL_RE.test(email))        return showMsg("err","Revisa el email: parece que falta algo.");
+      if(municipio.length < 2)         return showMsg("err","Indica tu municipio o población.");
+      if(tel && !/^[\d\s+().-]{6,20}$/.test(tel)) return showMsg("err","Ese teléfono no parece válido.");
+      if(!$("consent").checked)        return showMsg("err","Necesitamos tu permiso para tratar los datos.");
+      if($("empresa_web").value !== "") return;                  // bot: falla en silencio
+      if(Date.now() - openedAt < 1500) return showMsg("err","Un momento, revisa los datos antes de enviar.");
+
+      btn.disabled = true;
+      btn.textContent = "Generando informe…";
+
+      var lead = { nombre:nombre, email:email, tel:tel, municipio:municipio,
+                   marketing: $("marketing").checked };
+
+      function finish(pdfOk){
+        var gate = $("gate");
+        var msg  = $("msg");
+        gate.replaceChildren(msg);              // retira los campos, conserva el aviso
+        msg.className = "msg ok";
+        msg.textContent = pdfOk
+          ? "Listo. Te hemos descargado el informe en PDF con el desglose completo."
+          : "Listo. Aquí tienes el desglose completo. También puedes enviarlo por email.";
+        try{
+          var mailBtn = $("mailReport");
+          mailBtn.href = buildMailHref(lead);
+          mailBtn.hidden = false;
+        }catch(e){ console.error("No se pudo preparar el enlace de email:", e); }
+        $("breakdown").classList.add("show");
+        $("breakdown").scrollIntoView({behavior:"smooth", block:"start"});
+        postHeight();
+      }
+
+      generatePdf(lead)
+        .then(function(){ finish(true); })
+        .catch(function(err){ console.error("Fallo al generar el PDF:", err); finish(false); });
+
+    }catch(err){
+      console.error("Fallo inesperado al enviar el formulario:", err);
+      if(btn){ btn.disabled = false; btn.textContent = "Enviar y ver el desglose"; }
+      showMsg("err","Ha ocurrido un error inesperado. Prueba a desactivar bloqueadores de anuncios/scripts para esta página, o escríbenos directamente.");
     }
-
-    generatePdf(lead)
-      .then(function(){ finish(true); })
-      .catch(function(err){ console.error(err); finish(false); });
   });
 
   /* =========================================================
