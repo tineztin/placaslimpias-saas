@@ -575,14 +575,15 @@ details.adv > .adv-body{padding-top:14px}
   /* =========================================================
      1. CONFIGURACIÓN SEGURA
      Ningún parámetro de la URL se inyecta como HTML.
-     El logo, la marca y el enlace legal se piden al backend
-     con la clave pública para que nadie pueda suplantarlos.
+     En un embed real, /embed ya resolvió la clave en el servidor y
+     escribió window.__SOLARCALC_CONFIG__ con la marca verificada del
+     suscriptor antes de este script — nada de eso viene del cliente.
      ========================================================= */
   var qs = new URLSearchParams(location.search);
-  var API = "https://api.tu-dominio.com";      // <-- tu backend
-  var KEY = safeKey(qs.get("k"));
 
   var CFG = {
+    embedded: false,   // true cuando la config viene de /embed (lead real)
+    key:    "",
     brand:  "la empresa",
     accent: "#0B63CE",
     logo:   "",
@@ -606,7 +607,6 @@ details.adv > .adv-body{padding-top:14px}
     return Math.max(CFG.costMin, total);
   }
 
-  function safeKey(v){ return (v && /^[A-Za-z0-9_-]{8,48}$/.test(v)) ? v : ""; }
   function safeHex(v){
     if(!v) return null;
     v = String(v).replace(/^#/,"");
@@ -653,8 +653,20 @@ details.adv > .adv-body{padding-top:14px}
     return L > .45 ? "#0E1620" : "#FFFFFF";
   }
 
-  // Vista previa local (solo si no hay clave): permite maquetar sin backend
-  if(!KEY){    var pc = safeHex(qs.get("c")); if(pc) CFG.accent = pc;
+  if(window.__SOLARCALC_CONFIG__){
+    // Embed real: /embed ya verificó la clave contra Supabase y resolvió
+    // esta marca en el servidor.
+    var sc = window.__SOLARCALC_CONFIG__;
+    CFG.embedded = true;
+    CFG.key      = String(sc.key || "");
+    CFG.brand    = String(sc.brand || CFG.brand).slice(0,40);
+    CFG.accent   = safeHex(sc.accent) || CFG.accent;
+    CFG.logo     = safeUrl(sc.logo) || "";
+    CFG.privacy  = safeUrl(sc.privacy) || "";
+  } else {
+    // Vista previa local (demo.html, sin backend): permite maquetar la marca
+    // por query string.
+    var pc = safeHex(qs.get("c")); if(pc) CFG.accent = pc;
     var pb = qs.get("brand"); if(pb) CFG.brand = String(pb).slice(0,40);
     var plg = safeUrl(qs.get("logo")); if(plg) CFG.logo = plg;
   }
@@ -664,23 +676,6 @@ details.adv > .adv-body{padding-top:14px}
   if(qs.get("hd") === "0"){
     var hdEl = document.querySelector(".head");
     if(hdEl) hdEl.hidden = true;
-  }
-
-  if(KEY){
-    fetch(API + "/v1/config?k=" + encodeURIComponent(KEY), {credentials:"omit"})
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(d){
-        if(!d) return;
-        CFG.brand   = String(d.brand || CFG.brand).slice(0,40);
-        CFG.accent  = safeHex(d.accent) || CFG.accent;
-        CFG.logo    = safeUrl(d.logo) || "";
-        CFG.privacy = safeUrl(d.privacy) || "";
-        if(typeof d.costBase === "number") CFG.costBase = clamp(d.costBase, 0, 500);
-        if(typeof d.costMin  === "number") CFG.costMin  = clamp(d.costMin, 0, 2000);
-        if(Array.isArray(d.costTiers) && d.costTiers.length) CFG.costTiers = d.costTiers;
-        applyTheme(); compute();
-      })
-      .catch(function(){ /* silencioso: la calculadora sigue funcionando */ });
   }
 
   /* =========================================================
@@ -995,6 +990,31 @@ details.adv > .adv-body{padding-top:14px}
     });
   }
 
+  // En un embed real, guarda el lead en el backend del suscriptor
+  // (POST /api/v1/leads, misma-origen: el iframe vive en calculadorasolar.top).
+  // Fuera de un embed (demo.html, vista previa) no hay nada que guardar.
+  function submitLead(lead){
+    if(!CFG.embedded) return Promise.resolve(false);
+    return fetch("/api/v1/leads", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        key: CFG.key,
+        lead: lead,
+        calc: {
+          kwp: R.kwp, zona: R.zona, entorno: R.env, inclinacion: R.tilt,
+          meses: R.meses, limpiezasAnio: R.freq,
+          perdidaActualPct: +R.lossNow.toFixed(1),
+          kwhRecuperables: Math.round(R.kwhRecov),
+          valorAnualEur: Math.round(R.value),
+          costeLimpiezasEur: Math.round(R.costYear),
+          netoEur: Math.round(R.net)
+        }
+      })
+    }).then(function(r){ return r.ok; })
+      .catch(function(err){ console.error("Fallo al guardar el lead:", err); return false; });
+  }
+
   function buildMailHref(lead){
     var to = CFG.contactEmail || "hola@placaslimpias.es";
     var subject = "Presupuesto de limpieza — " + lead.nombre;
@@ -1045,19 +1065,29 @@ details.adv > .adv-body{padding-top:14px}
       if(Date.now() - openedAt < 1500) return showMsg("err","Un momento, revisa los datos antes de enviar.");
 
       btn.disabled = true;
-      btn.textContent = "Generando informe…";
+      btn.textContent = CFG.embedded ? "Enviando…" : "Generando informe…";
 
       var lead = { nombre:nombre, email:email, tel:tel, municipio:municipio,
                    marketing: $("marketing").checked };
 
-      function finish(pdfOk){
+      function finish(saved, pdfOk){
         var gate = $("gate");
         var msg  = $("msg");
         gate.replaceChildren(msg);              // retira los campos, conserva el aviso
         msg.className = "msg ok";
-        msg.textContent = pdfOk
-          ? "Listo. Te hemos descargado el informe en PDF con el desglose completo."
-          : "Listo. Aquí tienes el desglose completo. También puedes enviarlo por email.";
+        if(CFG.embedded && saved){
+          msg.textContent = "Listo. Hemos enviado tu solicitud a " + CFG.brand + "."
+            + (pdfOk ? " También te hemos descargado el informe en PDF." : "");
+        } else if(CFG.embedded && !saved){
+          msg.className = "msg err";
+          msg.textContent = "No hemos podido enviar tu solicitud automáticamente. "
+            + (pdfOk ? "Aquí tienes tu informe en PDF; escríbenos directamente si prefieres." : "Inténtalo de nuevo en un minuto.");
+        } else {
+          msg.className = "msg ok";
+          msg.textContent = pdfOk
+            ? "Listo. Te hemos descargado el informe en PDF con el desglose completo."
+            : "Listo. Aquí tienes el desglose completo. También puedes enviarlo por email.";
+        }
         try{
           var mailBtn = $("mailReport");
           mailBtn.href = buildMailHref(lead);
@@ -1068,9 +1098,13 @@ details.adv > .adv-body{padding-top:14px}
         postHeight();
       }
 
-      generatePdf(lead)
-        .then(function(){ finish(true); })
-        .catch(function(err){ console.error("Fallo al generar el PDF:", err); finish(false); });
+      Promise.all([
+        submitLead(lead),
+        generatePdf(lead).then(function(){ return true; })
+          .catch(function(err){ console.error("Fallo al generar el PDF:", err); return false; })
+      ]).then(function(results){
+        finish(results[0], results[1]);
+      });
 
     }catch(err){
       console.error("Fallo inesperado al enviar el formulario:", err);
