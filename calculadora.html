@@ -551,6 +551,7 @@ details.adv > .adv-body{padding-top:14px}
     <div class="brow"><span>Coste por limpieza (<span id="bFreq2">2</span> al año)</span><b id="bCost">–</b></div>
     <div class="brow total"><span>Ahorro neto anual</span><b id="bNet">–</b></div>
     <div class="brow"><span>Energía recuperada en 10 años</span><b id="bTen">–</b></div>
+    <a class="cta" id="mailReport" href="#" target="_blank" rel="noopener" style="text-decoration:none;margin-top:16px" hidden>📧 Enviar estos datos por email</a>
     <p class="disclaimer">
       Además del dinero, la suciedad adherida (deyecciones de aves, hojas, líquenes) genera puntos calientes que
       degradan las células de forma permanente y pueden invalidar la garantía del fabricante. Esto no está
@@ -566,6 +567,7 @@ details.adv > .adv-body{padding-top:14px}
   <p class="legal-foot" id="legalFoot"></p>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function(){
   "use strict";
@@ -585,6 +587,7 @@ details.adv > .adv-body{padding-top:14px}
     accent: "#0B63CE",
     logo:   "",
     privacy:"",
+    contactEmail: "hola@placaslimpias.es",
     // Tarifa de limpieza del instalador. Escalonada por kWp porque el precio
     // por vatio baja mucho en instalaciones grandes.
     costBase: 35,
@@ -858,10 +861,14 @@ details.adv > .adv-body{padding-top:14px}
   );
 
   /* =========================================================
-     3. CAPTURA DE LEAD (anti-spam en cliente + servidor)
+     3. CAPTURA DE LEAD
+     Sin backend propio: el desglose se genera como PDF descargable
+     en el propio navegador, y se ofrece un email pre-rellenado con
+     los mismos datos para que el visitante avise directamente a la
+     empresa. Nada de esto sale del dispositivo salvo que el usuario
+     pulse "enviar" en su propio cliente de correo.
      ========================================================= */
   var openedAt = 0;
-  var sessionToken = "";
 
   $("openGate").addEventListener("click", function(){
     var g = $("gate");
@@ -876,13 +883,6 @@ details.adv > .adv-body{padding-top:14px}
     }
     $("nombre").focus();
     postHeight();
-    // nonce firmado por el servidor: sin él, el backend rechaza el envío
-    if(KEY){
-      fetch(API + "/v1/session?k=" + encodeURIComponent(KEY), {credentials:"omit"})
-        .then(function(r){ return r.ok ? r.json() : null; })
-        .then(function(d){ if(d && d.token) sessionToken = d.token; })
-        .catch(function(){});
-    }
   });
 
   function showMsg(kind, text){
@@ -894,68 +894,177 @@ details.adv > .adv-body{padding-top:14px}
 
   var EMAIL_RE = /^[^\s@]{1,64}@[^\s@.]+(\.[^\s@.]+)+$/;
 
+  function hexToRgbArr(hex){
+    var n = parseInt(String(hex).replace(/^#/,""), 16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  }
+
+  function slug(s){
+    return String(s).normalize("NFD").replace(/[̀-ͯ]/g,"")
+      .replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-+|-+$/g,"").toLowerCase() || "informe";
+  }
+
+  // Carga jsPDF bajo demanda si el <script> del head no llegó a tiempo o falló
+  function loadJsPDF(){
+    if(window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+    return new Promise(function(resolve, reject){
+      var s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+      s.onload = function(){
+        (window.jspdf && window.jspdf.jsPDF) ? resolve(window.jspdf.jsPDF) : reject(new Error("jsPDF no disponible"));
+      };
+      s.onerror = function(){ reject(new Error("No se pudo cargar jsPDF")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function generatePdf(lead){
+    return loadJsPDF().then(function(jsPDF){
+      var doc = new jsPDF({ unit:"mm", format:"a4" });
+      var pageW = doc.internal.pageSize.getWidth();
+      var mx = 18, y = 24;
+      var ac = hexToRgbArr(CFG.accent);
+
+      doc.setFillColor(ac[0], ac[1], ac[2]);
+      doc.rect(0, 0, pageW, 8, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(14, 22, 32);
+      doc.text("Informe de pérdidas por suciedad", mx, y);
+      y += 7;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(90, 100, 110);
+      doc.text(CFG.brand + " · " + new Date().toLocaleDateString("es-ES", {day:"2-digit", month:"long", year:"numeric"}), mx, y);
+      y += 12;
+
+      function sectionTitle(t){
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12.5);
+        doc.setTextColor(14, 22, 32);
+        doc.text(t, mx, y);
+        y += 2;
+        doc.setDrawColor(214, 221, 228);
+        doc.line(mx, y, pageW - mx, y);
+        y += 7;
+      }
+      function row(label, value){
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10.5);
+        doc.setTextColor(51, 65, 79);
+        doc.text(String(label), mx, y);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(14, 22, 32);
+        doc.text(String(value), pageW - mx, y, { align:"right" });
+        y += 7;
+      }
+
+      sectionTitle("Tus datos");
+      row("Nombre", lead.nombre);
+      row("Email", lead.email);
+      if(lead.tel) row("Teléfono", lead.tel);
+      row("Municipio", lead.municipio);
+      y += 4;
+
+      sectionTitle("Tu instalación");
+      row("Potencia instalada", num1.format(R.kwp) + " kWp");
+      row("Entorno", $("entorno").options[$("entorno").selectedIndex].text);
+      row("Meses sin limpiar", R.meses);
+      y += 4;
+
+      sectionTitle("Resultado del cálculo");
+      row("Producción estimada sin suciedad", num.format(R.prod) + " kWh/año");
+      row("Pérdida media anual si no se limpia", num1.format(R.avgDirty) + " %");
+      row("Pérdida media limpiando " + R.freq + "x/año", num1.format(R.avgClean) + " %");
+      row("Energía recuperada al año", num.format(R.kwhRecov) + " kWh");
+      row("Valor de esa energía", eur.format(R.value));
+      row("Coste de limpieza (" + R.freq + " al año)", eur.format(R.costYear));
+      row("Ahorro neto anual", (R.net >= 0 ? "+" : "") + eur.format(R.net));
+      row("Energía recuperada en 10 años", num.format(R.kwhRecov * 10) + " kWh");
+      y += 6;
+
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8.5);
+      doc.setTextColor(107, 122, 137);
+      var disclaimer = "Estimación orientativa basada en modelos de ensuciamiento (soiling) y en la producción media de tu zona. Los valores reales dependen de la orientación, sombras, tipo de suciedad y estado del inversor. No sustituye a una revisión en tu tejado.";
+      doc.text(doc.splitTextToSize(disclaimer, pageW - mx * 2), mx, y);
+
+      doc.save("informe-solar-" + slug(lead.nombre) + ".pdf");
+    });
+  }
+
+  function buildMailHref(lead){
+    var to = CFG.contactEmail || "hola@placaslimpias.es";
+    var subject = "Presupuesto de limpieza — " + lead.nombre;
+    var body = [
+      "Hola,", "",
+      "He calculado cuánto pierdo por la suciedad en mis placas y quiero un presupuesto de limpieza.",
+      "",
+      "Mis datos:",
+      "- Nombre: " + lead.nombre,
+      "- Email: " + lead.email,
+      lead.tel ? "- Teléfono: " + lead.tel : null,
+      "- Municipio: " + lead.municipio,
+      "",
+      "Resultado de la calculadora:",
+      "- Potencia: " + num1.format(R.kwp) + " kWp",
+      "- Pérdida actual estimada: " + num1.format(R.lossNow) + " %",
+      "- Energía recuperable limpiando " + R.freq + " veces al año: " + num.format(R.kwhRecov) + " kWh",
+      "- Valor de esa energía: " + eur.format(R.value),
+      "- Ahorro neto anual estimado: " + eur.format(R.net),
+      "",
+      "Gracias."
+    ].filter(function(l){ return l !== null; }).join("\n");
+
+    return "mailto:" + encodeURIComponent(to).replace(/%40/g, "@")
+      + "?subject=" + encodeURIComponent(subject)
+      + "&body=" + encodeURIComponent(body);
+  }
+
   $("gate").addEventListener("submit", function(ev){
     ev.preventDefault();
 
-    var nombre = $("nombre").value.trim();
-    var email  = $("email").value.trim().toLowerCase();
-    var tel    = $("tel").value.trim();
-    var cp     = $("cp").value.trim();
+    var nombre    = $("nombre").value.trim();
+    var email     = $("email").value.trim().toLowerCase();
+    var tel       = $("tel").value.trim();
+    var municipio = $("municipio_form").value.trim();
 
     if(nombre.length < 2)            return showMsg("err","Escribe tu nombre para poder dirigirnos a ti.");
     if(!EMAIL_RE.test(email))        return showMsg("err","Revisa el email: parece que falta algo.");
-    if(!/^\d{5}$/.test(cp))          return showMsg("err","El código postal son 5 dígitos.");
+    if(municipio.length < 2)         return showMsg("err","Indica tu municipio o población.");
     if(tel && !/^[\d\s+().-]{6,20}$/.test(tel)) return showMsg("err","Ese teléfono no parece válido.");
     if(!$("consent").checked)        return showMsg("err","Necesitamos tu permiso para tratar los datos.");
     if($("empresa_web").value !== "") return;                  // bot: falla en silencio
-    if(Date.now() - openedAt < 3000) return showMsg("err","Un momento, revisa los datos antes de enviar.");
+    if(Date.now() - openedAt < 1500) return showMsg("err","Un momento, revisa los datos antes de enviar.");
 
     var btn = $("send");
     btn.disabled = true;
-    btn.textContent = "Enviando…";
+    btn.textContent = "Generando informe…";
 
-    var payload = {
-      k: KEY,
-      token: sessionToken,
-      captcha: (window.turnstile && window.turnstile.getResponse) ? window.turnstile.getResponse() : "",
-      hp: $("empresa_web").value,
-      elapsed: Date.now() - openedAt,
-      lead: { nombre:nombre, email:email, tel:tel, cp:cp,
-              marketing: $("marketing").checked, consent:true },
-      calc: {
-        kwp:R.kwp, zona:R.zona, entorno:R.env, inclinacion:R.tilt,
-        meses:R.meses, limpiezasAnio:R.freq,
-        perdidaActualPct:+R.lossNow.toFixed(1),
-        kwhRecuperables:Math.round(R.kwhRecov),
-        valorAnualEur:Math.round(R.value),
-        costeLimpiezasEur:Math.round(R.costYear),
-        netoEur:Math.round(R.net)
-      }
-    };
+    var lead = { nombre:nombre, email:email, tel:tel, municipio:municipio,
+                 marketing: $("marketing").checked };
 
-    fetch(API + "/v1/lead", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      credentials:"omit",
-      body: JSON.stringify(payload)
-    })
-    .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
-    .then(function(res){
-      if(!res.ok) throw new Error((res.d && res.d.code) || "error");
+    function finish(pdfOk){
       var gate = $("gate");
       var msg  = $("msg");
       gate.replaceChildren(msg);              // retira los campos, conserva el aviso
       msg.className = "msg ok";
-      msg.textContent = "Listo. Te hemos enviado el desglose a " + email + ".";
+      msg.textContent = pdfOk
+        ? "Listo. Te hemos descargado el informe en PDF con el desglose completo."
+        : "Listo. Aquí tienes el desglose completo. También puedes enviarlo por email.";
+      var mailBtn = $("mailReport");
+      mailBtn.href = buildMailHref(lead);
+      mailBtn.hidden = false;
       $("breakdown").classList.add("show");
       $("breakdown").scrollIntoView({behavior:"smooth", block:"start"});
       postHeight();
-    })
-    .catch(function(){
-      btn.disabled = false;
-      btn.textContent = "Enviar y ver el desglose";
-      showMsg("err","No hemos podido enviarlo. Inténtalo de nuevo en un minuto.");
-    });
+    }
+
+    generatePdf(lead)
+      .then(function(){ finish(true); })
+      .catch(function(err){ console.error(err); finish(false); });
   });
 
   /* =========================================================
