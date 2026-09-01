@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getSubscriberByKey } from "@/lib/subscribers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendLeadNotification } from "@/lib/email";
 
 // Llamado por el propio iframe de /embed (misma-origen: calculadorasolar.top
 // sirve tanto /embed como esta ruta), así que no hace falta CORS — añadir
@@ -12,9 +13,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // suscriptor): esa comprobación ya la hizo el navegador vía la cabecera
 // Content-Security-Policy: frame-ancestors que puso /embed.
 //
-// Pendiente para una fase posterior: rate limiting por api_key/IP y envío
-// de la notificación por email (Resend) — de momento el lead se guarda pero
-// no se notifica todavía.
+// Pendiente para una fase posterior: rate limiting por api_key/IP.
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@.]+(\.[^\s@.]+)+$/;
 
@@ -69,6 +68,18 @@ export async function POST(req: NextRequest) {
   if (error) {
     return NextResponse.json({ ok: false, error: "insert_failed" }, { status: 500 });
   }
+
+  // after(): se ejecuta tras enviar la respuesta al visitante, así el envío
+  // del email (más lento, y no crítico) no le hace esperar. El lead ya está
+  // guardado; si el email falla, sendLeadNotification lo registra y sigue.
+  after(() =>
+    sendLeadNotification({
+      to: subscriber.notification_emails,
+      companyName: subscriber.company_name,
+      lead: { nombre, email, tel, municipio },
+      calc: body.calc || {},
+    }),
+  );
 
   return NextResponse.json({ ok: true });
 }

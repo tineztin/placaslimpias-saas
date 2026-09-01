@@ -39,7 +39,7 @@ export async function getSubscriberByKey(key: string): Promise<Subscriber | null
   const { data, error } = await supabase
     .from("subscribers")
     .select(
-      "id, api_key, company_name, brand_color, logo_url, privacy_policy_url, allowed_domains, subscription_status",
+      "id, api_key, company_name, brand_color, logo_url, privacy_policy_url, allowed_domains, notification_emails, subscription_status",
     )
     .eq("api_key", key)
     .maybeSingle();
