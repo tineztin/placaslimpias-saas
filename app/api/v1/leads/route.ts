@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { getSubscriberByKey } from "@/lib/subscribers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLeadNotification } from "@/lib/email";
+import { checkLeadRateLimit } from "@/lib/ratelimit";
 
 // Llamado por el propio iframe de /embed (misma-origen: calculadorasolar.top
 // sirve tanto /embed como esta ruta), así que no hace falta CORS — añadir
@@ -12,8 +13,10 @@ import { sendLeadNotification } from "@/lib/email";
 // siempre llega desde calculadorasolar.top, nunca desde el sitio del
 // suscriptor): esa comprobación ya la hizo el navegador vía la cabecera
 // Content-Security-Policy: frame-ancestors que puso /embed.
-//
-// Pendiente para una fase posterior: rate limiting por api_key/IP.
+
+function clientIp(req: NextRequest): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@.]+(\.[^\s@.]+)+$/;
 
@@ -38,6 +41,12 @@ export async function POST(req: NextRequest) {
   }
 
   const key = String(body.key || "");
+
+  const withinLimit = await checkLeadRateLimit(key, clientIp(req));
+  if (!withinLimit) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   const subscriber = await getSubscriberByKey(key);
   if (!subscriber || subscriber.subscription_status !== "active") {
     return NextResponse.json({ ok: false, error: "invalid_key" }, { status: 403 });
