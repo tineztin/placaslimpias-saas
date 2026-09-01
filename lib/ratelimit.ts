@@ -27,6 +27,14 @@ const byIp = redis
 export async function checkLeadRateLimit(apiKey: string, ip: string): Promise<boolean> {
   if (!byKey || !byIp) return true;
 
-  const [keyResult, ipResult] = await Promise.all([byKey.limit(apiKey), byIp.limit(ip)]);
-  return keyResult.success && ipResult.success;
+  // Falla abierto: un problema de Upstash (permisos, caída del servicio...)
+  // nunca debe impedir que se guarde un lead real. El freno anti-abuso es
+  // una mejora, no debe ser un punto único de fallo para el endpoint.
+  try {
+    const [keyResult, ipResult] = await Promise.all([byKey.limit(apiKey), byIp.limit(ip)]);
+    return keyResult.success && ipResult.success;
+  } catch (err) {
+    console.error("Rate limit de Upstash falló, dejando pasar la petición:", err);
+    return true;
+  }
 }
