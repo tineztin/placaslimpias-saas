@@ -2,9 +2,18 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import crypto from "node:crypto";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getStripe } from "@/lib/stripe";
+
+async function getBaseUrl(): Promise<string> {
+  const h = await headers();
+  const host = h.get("host") || "calculadorasolar.top";
+  const proto = h.get("x-forwarded-proto") || (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
+}
 
 async function requireUser() {
   const supabase = await createServerClient();
@@ -118,6 +127,68 @@ export async function signOutAction() {
   const supabase = await createServerClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+// Lleva al suscriptor al Checkout hospedado por Stripe. subscription_status
+// se activa solo cuando llega el webhook (checkout.session.completed /
+// customer.subscription.updated) — nunca lo escribe esta acción, para que
+// no haya forma de "activarse" sin pasar de verdad por el pago.
+export async function createCheckoutSession() {
+  const user = await requireUser();
+  const admin = createAdminClient();
+
+  const { data: sub } = await admin
+    .from("subscribers")
+    .select("id, stripe_customer_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!sub) redirect("/dashboard/onboarding");
+
+  const priceId = process.env.STRIPE_PRICE_ID;
+  if (!priceId) throw new Error("Falta configurar STRIPE_PRICE_ID.");
+
+  const baseUrl = await getBaseUrl();
+  const stripe = getStripe();
+
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    line_items: [{ price: priceId, quantity: 1 }],
+    customer: sub.stripe_customer_id || undefined,
+    customer_email: sub.stripe_customer_id ? undefined : user.email,
+    client_reference_id: sub.id,
+    metadata: { subscriber_id: sub.id },
+    subscription_data: { metadata: { subscriber_id: sub.id } },
+    success_url: `${baseUrl}/dashboard?checkout=success`,
+    cancel_url: `${baseUrl}/dashboard?checkout=cancelled`,
+  });
+
+  if (!session.url) throw new Error("Stripe no devolvió una URL de checkout.");
+  redirect(session.url);
+}
+
+// Portal de facturación hospedado por Stripe: cancelar, cambiar tarjeta,
+// ver facturas. Requiere haber pasado antes por Checkout al menos una vez
+// (para tener stripe_customer_id).
+export async function createPortalSession() {
+  const user = await requireUser();
+  const admin = createAdminClient();
+
+  const { data: sub } = await admin
+    .from("subscribers")
+    .select("stripe_customer_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!sub?.stripe_customer_id) throw new Error("Todavía no tienes una suscripción de Stripe.");
+
+  const baseUrl = await getBaseUrl();
+  const stripe = getStripe();
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: sub.stripe_customer_id,
+    return_url: `${baseUrl}/dashboard`,
+  });
+
+  redirect(session.url);
 }
 
 function splitList(raw: string): string[] {

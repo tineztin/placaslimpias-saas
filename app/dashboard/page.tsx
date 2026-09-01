@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getOwnSubscriber } from "@/lib/subscribers";
 import CopySnippet from "./copy-snippet";
+import { createCheckoutSession, createPortalSession } from "./actions";
 
 export default async function DashboardHome() {
   const subscriber = await getOwnSubscriber();
@@ -40,10 +41,29 @@ export default async function DashboardHome() {
         </p>
       </div>
 
-      {subscriber.subscription_status !== "active" && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Tu calculadora no se mostrará en tu web mientras la suscripción no esté activa.
+      {subscriber.subscription_status !== "active" ? (
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm text-amber-800">
+            Tu calculadora no se mostrará en tu web mientras la suscripción no esté activa. 9 € + IVA
+            al mes, cancela cuando quieras.
+          </p>
+          <form action={createCheckoutSession}>
+            <button
+              type="submit"
+              className="whitespace-nowrap rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+            >
+              Suscribirme
+            </button>
+          </form>
         </div>
+      ) : (
+        subscriber.stripe_customer_id && (
+          <form action={createPortalSession}>
+            <button type="submit" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+              Gestionar suscripción y facturas →
+            </button>
+          </form>
+        )
       )}
 
       <CopySnippet snippet={snippet} />

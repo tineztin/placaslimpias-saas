@@ -14,6 +14,7 @@ export type Subscriber = {
   allowed_domains: string[];
   redirect_url: string | null;
   subscription_status: "active" | "canceled" | "past_due";
+  stripe_customer_id: string | null;
 };
 
 // Lectura del propio suscriptor: usa el cliente de sesión (respeta RLS,
