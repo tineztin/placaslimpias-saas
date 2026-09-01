@@ -60,7 +60,10 @@ export async function POST(req: NextRequest) {
     lead_name: nombre,
     lead_email: email,
     lead_phone: tel || null,
-    calc_data: body.calc || {},
+    // leads no tiene columna propia para el municipio (no estaba en el
+    // esquema original): se guarda dentro de calc_data, que ya es el cajón
+    // flexible para todo lo relacionado con el cálculo.
+    calc_data: { ...(body.calc || {}), municipio },
   });
 
   if (error) {
