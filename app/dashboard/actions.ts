@@ -158,6 +158,11 @@ export async function createCheckoutSession() {
     client_reference_id: sub.id,
     metadata: { subscriber_id: sub.id },
     subscription_data: { metadata: { subscriber_id: sub.id } },
+    // Managed Payments (el "merchant of record" de Stripe) viene activado
+    // por defecto en cuentas nuevas y exige un código fiscal por producto;
+    // lo desactivamos porque el precio ya es fijo (10,89 € con el IVA
+    // incluido) y gestionamos los impuestos nosotros, no Stripe.
+    managed_payments: { enabled: false },
     success_url: `${baseUrl}/dashboard?checkout=success`,
     cancel_url: `${baseUrl}/dashboard?checkout=cancelled`,
   });
