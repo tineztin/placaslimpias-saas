@@ -107,12 +107,24 @@
         gap: 16px;
         font-size: 12px;
       }
+      /* En pantallas estrechas no caben los 4 enlaces + el botón: se
+         mantiene solo el acceso al panel, que es la acción prioritaria. */
+      nav a:not(.nav-cta) {
+        display: none;
+      }
+      .nav-cta {
+        padding: 7px 12px;
+        font-size: 13px;
+      }
       header .wrap {
         height: 56px;
       }
       .logo-icon {
         width: 32px;
         height: 32px;
+      }
+      .logo-text {
+        font-size: 14px;
       }
     }
 
@@ -463,6 +475,56 @@
       }
     }
 
+    /* Botón de acceso al panel privado */
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: var(--accent-light);
+      color: var(--accent) !important;
+      font-weight: 650;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    .nav-cta:hover {
+      background: var(--accent);
+      color: #fff !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 102, 178, 0.25);
+    }
+    .nav-cta svg {
+      flex-shrink: 0;
+    }
+
+    /* Badges de icono en tarjetas de características */
+    .icon-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--accent-light);
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    /* Stats como tarjetas */
+    .stat-item {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 28px 20px;
+      transition: all 0.3s ease;
+    }
+    .stat-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 12px 24px rgba(0, 102, 178, 0.1);
+      transform: translateY(-4px);
+    }
+
     /* Badge */
     .badge {
       display: inline-block;
@@ -519,7 +581,10 @@
         <a href="#features">Características</a>
         <a href="#pricing">Precios</a>
         <a href="#demo">Demo</a>
-        <a href="/login" style="font-weight: 650; color: var(--accent);">Acceder</a>
+        <a href="/login" class="nav-cta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Acceder
+        </a>
       </nav>
     </div>
   </header>
@@ -582,27 +647,33 @@
 
       <div class="grid">
         <div class="card">
-          <h3>📊 Educación Automática</h3>
+          <div class="icon-badge">📊</div>
+          <h3>Educación Automática</h3>
           <p>Tus clientes ven exactamente cuánto pierden por placas sucias. La urgencia de limpiar es automática.</p>
         </div>
         <div class="card">
-          <h3>📝 Captura de Contactos Calificados</h3>
+          <div class="icon-badge">📝</div>
+          <h3>Captura de Contactos Calificados</h3>
           <p>Recibes nombre, email, teléfono, municipio y energía perdida estimada. Presupuesta en 5 minutos.</p>
         </div>
         <div class="card">
-          <h3>⚙️ Instalación Ultrarrápida</h3>
+          <div class="icon-badge">⚙️</div>
+          <h3>Instalación Ultrarrápida</h3>
           <p>2-5 minutos. Un código iframe. Sin cambiar tu web. Compatible con WordPress, Wix, Shopify, HTML puro.</p>
         </div>
         <div class="card">
-          <h3>📱 Responsive y Rápido</h3>
+          <div class="icon-badge">📱</div>
+          <h3>Responsive y Rápido</h3>
           <p>Funciona perfectamente en móvil, tablet y desktop. Carga en menos de 1 segundo. UX profesional.</p>
         </div>
         <div class="card">
-          <h3>🎯 Segmentación por Zona</h3>
+          <div class="icon-badge">🎯</div>
+          <h3>Segmentación por Zona</h3>
           <p>Calcula según tu región: radiación solar, climatología, lluvia. Presupuestos realistas y competitivos.</p>
         </div>
         <div class="card">
-          <h3>💰 Precio Más Justo del Mercado</h3>
+          <div class="icon-badge">💰</div>
+          <h3>Precio Más Justo del Mercado</h3>
           <p>9€+IVA al mes. Contactos ilimitados. Sin permanencia. Mejor ROI que cualquier plataforma de leads.</p>
         </div>
       </div>
