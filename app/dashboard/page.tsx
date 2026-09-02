@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getOwnSubscriber } from "@/lib/subscribers";
-import Step from "./step";
+import StepTabs from "./step-tabs";
 import SettingsForm from "./settings/settings-form";
 import LivePreview from "./live-preview";
 import CopySnippet from "./copy-snippet";
@@ -81,37 +81,51 @@ window.addEventListener("message", function (e) {
         )
       )}
 
-      <Step n={1} title="Configura tu marca" description="Logo, color, dónde recibir avisos y qué dominios pueden mostrarla.">
-        <SettingsForm subscriber={subscriber} />
-      </Step>
-
-      <Step
-        n={2}
-        title="Previsualiza"
-        description="Iframe real, exactamente lo que verán tus clientes. Si acabas de guardar cambios en el paso 1, recarga esta página para verlos aquí."
-      >
-        <div className="overflow-hidden rounded-lg border border-slate-200">
-          <LivePreview apiKey={subscriber.api_key} />
-        </div>
-        <a
-          href={`/embed?key=${subscriber.api_key}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
-        >
-          Abrir en pestaña nueva →
-        </a>
-        {(!subscriber.allowed_domains || subscriber.allowed_domains.length === 0) && (
-          <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-            Aún no has añadido ningún dominio autorizado en el paso 1. Tu calculadora solo se
-            mostrará en calculadorasolar.top hasta que lo hagas.
+      <StepTabs
+        stepConfigure={
+          <div>
+            <p className="text-sm text-slate-500">
+              Logo, color, dónde recibir avisos y qué dominios pueden mostrarla.
+            </p>
+            <SettingsForm subscriber={subscriber} />
           </div>
-        )}
-      </Step>
-
-      <Step n={3} title="Copia el código" description="Pega esto en tu web, donde quieras que aparezca la calculadora.">
-        <CopySnippet snippet={snippet} />
-      </Step>
+        }
+        stepPreview={
+          <div>
+            <p className="text-sm text-slate-500">
+              Iframe real, exactamente lo que verán tus clientes. Si acabas de guardar cambios en
+              el paso 1, cambia de pestaña y vuelve para verlos aquí.
+            </p>
+            <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
+              <LivePreview apiKey={subscriber.api_key} />
+            </div>
+            <a
+              href={`/embed?key=${subscriber.api_key}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
+            >
+              Abrir en pestaña nueva →
+            </a>
+            {(!subscriber.allowed_domains || subscriber.allowed_domains.length === 0) && (
+              <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                Aún no has añadido ningún dominio autorizado en el paso 1. Tu calculadora solo se
+                mostrará en calculadorasolar.top hasta que lo hagas.
+              </div>
+            )}
+          </div>
+        }
+        stepCode={
+          <div>
+            <p className="text-sm text-slate-500">
+              Pega esto en tu web, donde quieras que aparezca la calculadora.
+            </p>
+            <div className="mt-4">
+              <CopySnippet snippet={snippet} />
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 }
