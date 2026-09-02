@@ -1098,11 +1098,18 @@ details.adv > .adv-body{padding-top:14px}
             ? "Listo. Te hemos descargado el informe en PDF con el desglose completo."
             : "Listo. Aquí tienes el desglose completo. También puedes enviarlo por email.";
         }
-        try{
-          var mailBtn = $("mailReport");
-          mailBtn.href = buildMailHref(lead);
-          mailBtn.hidden = false;
-        }catch(e){ console.error("No se pudo preparar el enlace de email:", e); }
+        // El botón de mailto es un respaldo manual, no el canal principal:
+        // en un embed real que sí se guardó, el aviso ya salió solo por
+        // detrás (Resend) — mostrar aquí un botón de "envíalo tú" además
+        // da a entender, por error, que hace falta un paso manual.
+        var needsManualFallback = !(CFG.embedded && saved);
+        if(needsManualFallback){
+          try{
+            var mailBtn = $("mailReport");
+            mailBtn.href = buildMailHref(lead);
+            mailBtn.hidden = false;
+          }catch(e){ console.error("No se pudo preparar el enlace de email:", e); }
+        }
         $("breakdown").classList.add("show");
         $("breakdown").scrollIntoView({behavior:"smooth", block:"start"});
         postHeight();
