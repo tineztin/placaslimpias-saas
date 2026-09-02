@@ -18,6 +18,7 @@ export default function SettingsForm({ subscriber }: { subscriber: Subscriber })
           required
           minLength={2}
           maxLength={120}
+          placeholder="SolarClean Barcelona"
           className={inputClass}
         />
       </Field>
