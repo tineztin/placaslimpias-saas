@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /api/
+Disallow: /embed
+Disallow: /calculadora.html
+Disallow: /demo.html
+Disallow: /reset-password
+
+Sitemap: https://calculadorasolar.top/sitemap.xml
