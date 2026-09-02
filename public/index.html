@@ -258,19 +258,45 @@
       font-size: 18px;
     }
 
-    /* Hero section */
+    /* Hero section: texto centrado arriba, imagen a todo lo ancho debajo,
+       para que la imagen se vea grande en vez de aplastada en media columna. */
     .hero-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
+      display: flex;
+      flex-direction: column;
       align-items: center;
+      gap: 48px;
+    }
+
+    .hero-text {
+      max-width: 680px;
+      text-align: center;
     }
 
     .hero-text h1 {
       margin-bottom: 24px;
     }
 
+    .hero-text .sub {
+      margin: 0 auto;
+    }
+
+    .hero-text .features {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+
+    .hero-text .btn {
+      margin-top: 24px;
+    }
+
     .hero-image {
+      width: 100%;
+      max-width: 980px;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 20px 40px rgba(0, 102, 178, 0.2);
@@ -287,8 +313,7 @@
 
     @media (max-width: 768px) {
       .hero-content {
-        grid-template-columns: 1fr;
-        gap: 40px;
+        gap: 32px;
       }
     }
 
