@@ -289,6 +289,116 @@
       display: block;
     }
 
+    /* Mockup del resultado de la calculadora: sustituye a la foto de stock
+       por algo que muestra directamente qué hace el producto (captar el
+       lead), no una imagen genérica de placas. */
+    .hero-mockup {
+      background: linear-gradient(160deg, var(--ink) 0%, #16222f 100%);
+      padding: 100px 28px 90px;
+    }
+
+    .mockup-panel {
+      width: 100%;
+      max-width: 380px;
+      margin: 0 auto;
+    }
+
+    .mockup-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7E8FA0;
+      margin: 0 0 14px;
+    }
+
+    .mockup-meter-track {
+      height: 6px;
+      background: #22303E;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .mockup-meter-fill {
+      height: 100%;
+      width: 78%;
+      background: var(--warning);
+      border-radius: 99px;
+    }
+
+    .mockup-meter-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #6B7A89;
+      margin: 6px 0 28px;
+    }
+
+    .mockup-result-label {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #7E8FA0;
+      margin: 0 0 6px;
+    }
+
+    .mockup-euro {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin: 0 0 20px;
+    }
+
+    .mockup-cta {
+      background: var(--accent);
+      color: #fff;
+      text-align: center;
+      padding: 13px 16px;
+      border-radius: 9px;
+      font-weight: 650;
+      font-size: 14px;
+    }
+
+    .hero-lead-toast {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 230px;
+    }
+
+    .hero-lead-toast-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+      box-shadow: 0 0 0 4px rgba(34, 168, 74, 0.15);
+    }
+
+    .hero-lead-toast-title {
+      font-size: 12px;
+      font-weight: 650;
+      color: var(--ink);
+    }
+
+    .hero-lead-toast-name {
+      font-size: 11.5px;
+      color: var(--ink-3);
+      margin-top: 2px;
+    }
+
+    @media (max-width: 480px) {
+      .hero-lead-toast { display: none; }
+    }
+
     .hero-logo-overlay {
       position: absolute;
       top: 20px;
@@ -606,8 +716,24 @@
           </ul>
           <a href="#pricing" class="btn btn-primary">→ Ver precios y activar</a>
         </div>
-        <div class="hero-image">
-          <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80&auto=format&fit=crop" alt="Paneles solares instalados en un campo" style="width: 100%; height: 100%; object-fit: cover;"/>
+        <div class="hero-image hero-mockup">
+          <div class="mockup-panel" role="img" aria-label="Resultado de la calculadora: la suciedad te cuesta 312 a 540 euros al año">
+            <p class="mockup-eyebrow">Estado estimado de sus placas</p>
+            <div class="mockup-meter-track"><div class="mockup-meter-fill"></div></div>
+            <div class="mockup-meter-labels"><span>Limpio</span><span>Muy sucio</span></div>
+            <p class="mockup-result-label">La suciedad le cuesta cada año</p>
+            <p class="mockup-euro">312–540 €</p>
+            <div class="mockup-cta">Quiero el informe y un presupuesto</div>
+          </div>
+
+          <div class="hero-lead-toast">
+            <span class="hero-lead-toast-dot"></span>
+            <div>
+              <div class="hero-lead-toast-title">Nuevo lead recibido</div>
+              <div class="hero-lead-toast-name">Antonio R. · Madrid</div>
+            </div>
+          </div>
+
           <div class="hero-logo-overlay">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Calculadora Solar">
               <defs>
