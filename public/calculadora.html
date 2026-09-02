@@ -467,7 +467,7 @@ details.adv > .adv-body{padding-top:14px}
       <div class="meter">
         <div class="meter-track"><div class="meter-fill" id="meterFill" style="width:0%"></div></div>
         <div class="meter-scale">
-          <span>Limpio</span><span id="lossPct" class="data" style="color:#C9A55C">0 %</span><span>Muy sucio</span>
+          <span>Limpio</span><span>Muy sucio</span>
         </div>
       </div>
 
@@ -770,7 +770,7 @@ details.adv > .adv-body{padding-top:14px}
     var costDirt  = kwhLost * price;
     var days      = kwhLost / (prod/365);
 
-    R = { kwp:kwp, prod:prod, lossNow:lossNow, avgDirty:avgDirty, avgClean:avgClean,
+    R = { kwp:kwp, prod:prod, lossNow:lossNow, Lmax:Lmax, avgDirty:avgDirty, avgClean:avgClean,
           recovPct:recovPct, kwhRecov:kwhRecov, value:value, costOne:costOne, costYear:costYear,
           kwhLost:kwhLost, costDirt:costDirt,
           net:net, days:days, freq:freq, bestF:bestF, bestNet:bestNet,
@@ -788,12 +788,15 @@ details.adv > .adv-body{padding-top:14px}
     $("mesesVal").textContent = R.meses + (R.meses === 1 ? " mes" : " meses");
     $("autoVal").textContent  = $("auto").value + " %";
 
-    // panel sucio
-    var sat = clamp(R.lossNow/22, 0, 1);
+    // panel sucio: todo escalado sobre lo sucio que puede llegar a estar TU
+    // instalación (Lmax, según entorno/inclinación/zona), no un tope fijo —
+    // así el panel y el medidor llegan a "muy sucio" según se acerque a su
+    // propio máximo, sea cual sea el entorno, en vez de solo en los casos
+    // más extremos.
+    var sat = clamp(R.lossNow/R.Lmax, 0, 1);
     $("dustLayer").setAttribute("opacity", (sat*0.92).toFixed(2));
-    $("birdGroup").setAttribute("opacity", (clamp((R.lossNow-9)/11,0,1)*0.85).toFixed(2));
-    $("meterFill").style.width = (clamp(R.lossNow/25,0,1)*100).toFixed(0) + "%";
-    $("lossPct").textContent = num1.format(R.lossNow) + " % de pérdida ahora";
+    $("birdGroup").setAttribute("opacity", (clamp((sat-0.4)/0.6,0,1)*0.85).toFixed(2));
+    $("meterFill").style.width = (sat*100).toFixed(0) + "%";
 
     // lectura principal, siempre como horquilla honesta
     var lo = R.costDirt*0.75, hi = R.costDirt*1.3;
