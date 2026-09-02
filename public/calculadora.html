@@ -544,7 +544,7 @@ details.adv > .adv-body{padding-top:14px}
   <section class="card breakdown" id="breakdown" aria-labelledby="h-desglose">
     <span class="eyebrow" id="h-desglose">Cómo sale el número</span>
     <div class="brow"><span>Producción estimada sin suciedad</span><b id="bProd">–</b></div>
-    <div class="brow"><span>Pérdida media anual si no se limpia</span><b id="bLoss">–</b></div>
+    <div class="brow"><span>Pérdida actual (sin limpiar)</span><b id="bLoss">–</b></div>
     <div class="brow"><span>Pérdida media anual limpiando <span id="bFreq">2</span> veces al año</span><b id="bLoss2">–</b></div>
     <div class="brow"><span>Energía recuperada</span><b id="bKwh">–</b></div>
     <div class="brow"><span>Valor de esa energía</span><b id="bValue">–</b></div>
@@ -740,7 +740,7 @@ details.adv > .adv-body{padding-top:14px}
     var Lmax = Math.min(30, ENV[env] * TILT[tilt] * Z.rain);
 
     var lossNow  = Lmax * (1 - Math.exp(-meses/tau));           // ahora mismo
-    var avgDirty = Lmax * 0.95;                                  // media anual sin limpiar
+    var avgDirty = lossNow;                                      // coste anual, a tu ritmo actual de suciedad
     var prod     = kwp * Z.y;                                    // kWh/año teóricos
     var price    = auto*pImp + (1-auto)*pExp;
     var costOne  = cleaningCost(kwp);
@@ -800,13 +800,13 @@ details.adv > .adv-body{padding-top:14px}
     $("euroRange").textContent = num.format(lo) + "–" + num.format(hi) + " €";
 
     var lim = R.freq + " limpieza" + (R.freq>1 ? "s" : "");
-    var cap = "Limpiar tus placas ahora devuelve tu instalación a su rendimiento original. ";
+    var cap;
     if(R.net > 40){
-      cap += "Con " + lim + " al año, la limpieza se paga sola: te quedan " + eur.format(R.net) + " a favor cada año.";
+      cap = "Con " + lim + " al año recuperas el rendimiento original y te quedan " + eur.format(R.net) + " a favor.";
     } else if(R.net > -60){
-      cap += "El ahorro en energía prácticamente cubre el coste de " + lim + " al año, y además evitas los puntos calientes que degradan las células para siempre.";
+      cap = "Con " + lim + " al año recuperas el rendimiento original y proteges tus paneles de por vida.";
     } else {
-      cap += "Aquí el valor no está solo en la energía: es lo que separa una instalación que dura 25 años de una que pierde rendimiento antes de tiempo.";
+      cap = "Limpiar devuelve el rendimiento original y protege tus paneles a largo plazo.";
     }
     $("leadCap").textContent = cap;
     $("recoBadge").textContent = "Recomendado: " + R.bestF + " limpieza" + (R.bestF>1?"s":"") + " al año";
@@ -971,7 +971,7 @@ details.adv > .adv-body{padding-top:14px}
 
       sectionTitle("Resultado del cálculo");
       row("Producción estimada sin suciedad", num.format(R.prod) + " kWh/año");
-      row("Pérdida media anual si no se limpia", num1.format(R.avgDirty) + " %");
+      row("Pérdida actual (sin limpiar)", num1.format(R.avgDirty) + " %");
       row("Pérdida media limpiando " + R.freq + "x/año", num1.format(R.avgClean) + " %");
       row("Energía recuperada al año", num.format(R.kwhRecov) + " kWh");
       row("Valor de esa energía", eur.format(R.value));
