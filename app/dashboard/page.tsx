@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getOwnSubscriber } from "@/lib/subscribers";
 import CopySnippet from "./copy-snippet";
+import LivePreview from "./live-preview";
 import { createCheckoutSession, createPortalSession } from "./actions";
 
 export default async function DashboardHome() {
@@ -69,18 +70,26 @@ export default async function DashboardHome() {
       <CopySnippet snippet={snippet} />
 
       <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="text-sm font-semibold text-slate-900">Previsualizar</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Así se ve tu calculadora ahora mismo, con tu marca aplicada.
-        </p>
-        <a
-          href={`/embed?key=${subscriber.api_key}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
-        >
-          Abrir vista previa →
-        </a>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-900">Previsualizar</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Esto es un iframe real, exactamente lo que verán tus clientes. Cualquier cambio que
+              guardes en Configuración se refleja aquí al momento (recarga la página para verlo).
+            </p>
+          </div>
+          <a
+            href={`/embed?key=${subscriber.api_key}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            Abrir en pestaña nueva →
+          </a>
+        </div>
+        <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
+          <LivePreview apiKey={subscriber.api_key} />
+        </div>
       </div>
 
       {(!subscriber.allowed_domains || subscriber.allowed_domains.length === 0) && (

@@ -31,6 +31,10 @@ export default function CopySnippet({ snippet }: { snippet: string }) {
       <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 p-4 text-xs leading-relaxed text-slate-200">
         <code>{snippet}</code>
       </pre>
+      <p className="mt-3 text-xs text-slate-400">
+        El script crea automáticamente un iframe con tu calculadora dentro de ese div — no hace
+        falta que añadas ningún &lt;iframe&gt; a mano.
+      </p>
     </div>
   );
 }
