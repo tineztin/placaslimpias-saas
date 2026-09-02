@@ -684,11 +684,11 @@ details.adv > .adv-body{padding-top:14px}
   // Cada zona lleva su producción, su lluvia (que limpia sola) y la velocidad
   // a la que se acumula la suciedad entre lluvias.
   var ZONE = {
-    norte:    { y:1100, rain:0.72, tau:4.5 },
-    centro:   { y:1450, rain:1.00, tau:3.5 },
-    levante:  { y:1520, rain:1.12, tau:3.2 },
-    sur:      { y:1620, rain:1.15, tau:3.0 },
-    canarias: { y:1680, rain:1.25, tau:2.8 }
+    norte:    { y:1100, rain:0.72, tau:18 },
+    centro:   { y:1450, rain:1.00, tau:14 },
+    levante:  { y:1520, rain:1.12, tau:13 },
+    sur:      { y:1620, rain:1.15, tau:12 },
+    canarias: { y:1680, rain:1.25, tau:11 }
   };
   // Pérdida máxima de saturación (%) por entorno
   var ENV   = { residencial:6, urbana:9, costa:10, agricola:14, industrial:18, ganaderia:22 };
@@ -800,13 +800,13 @@ details.adv > .adv-body{padding-top:14px}
     $("euroRange").textContent = num.format(lo) + "–" + num.format(hi) + " €";
 
     var lim = R.freq + " limpieza" + (R.freq>1 ? "s" : "");
-    var cap = "Con " + lim + " al año recuperas unos " + eur.format(R.value) + " de esa pérdida. ";
+    var cap = "Limpiar tus placas ahora devuelve tu instalación a su rendimiento original. ";
     if(R.net > 40){
-      cap += "Descontando el coste, te quedan " + eur.format(R.net) + " a favor.";
+      cap += "Con " + lim + " al año, la limpieza se paga sola: te quedan " + eur.format(R.net) + " a favor cada año.";
     } else if(R.net > -60){
-      cap += "Casi cubre el coste, y además evitas los puntos calientes que degradan las células.";
+      cap += "El ahorro en energía prácticamente cubre el coste de " + lim + " al año, y además evitas los puntos calientes que degradan las células para siempre.";
     } else {
-      cap += "Aquí el retorno en energía es pequeño: el valor está en proteger los paneles y la garantía.";
+      cap += "Aquí el valor no está solo en la energía: es lo que separa una instalación que dura 25 años de una que pierde rendimiento antes de tiempo.";
     }
     $("leadCap").textContent = cap;
     $("recoBadge").textContent = "Recomendado: " + R.bestF + " limpieza" + (R.bestF>1?"s":"") + " al año";
