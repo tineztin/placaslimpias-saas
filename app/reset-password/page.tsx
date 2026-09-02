@@ -14,21 +14,38 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    // El enlace del email trae el token de recuperación en el fragmento de
-    // la URL; el SDK de Supabase lo procesa solo y dispara este evento con
-    // una sesión temporal válida únicamente para cambiar la contraseña.
+
+    // El cliente de navegador (@supabase/ssr, pensado para el flujo PKCE con
+    // ?code=) no detecta automáticamente el token de recuperación clásico
+    // que trae el enlace del email en el fragmento de la URL
+    // (#access_token=...&refresh_token=...&type=recovery) — así que lo
+    // leemos a mano y abrimos la sesión temporal explícitamente.
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const accessToken = hash.get("access_token");
+    const refreshToken = hash.get("refresh_token");
+    const type = hash.get("type");
+
+    if (type === "recovery" && accessToken && refreshToken) {
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(({ error }) => {
+        if (!error) {
+          // Limpia el token de la barra de direcciones una vez usado.
+          window.history.replaceState(null, "", window.location.pathname);
+          setReady(true);
+        }
+      });
+      return;
+    }
+
+    // Alternativa: el SDK ya procesó el enlace (p. ej. flujo PKCE con
+    // ?code=) antes de que este efecto se ejecutara.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setReady(true);
     });
-
-    // Si la pestaña ya procesó el enlace antes de que este listener se
-    // registrara, comprobamos también si ya hay sesión.
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
