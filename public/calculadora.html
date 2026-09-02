@@ -788,12 +788,13 @@ details.adv > .adv-body{padding-top:14px}
     $("mesesVal").textContent = R.meses + (R.meses === 1 ? " mes" : " meses");
     $("autoVal").textContent  = $("auto").value + " %";
 
-    // panel sucio: todo escalado sobre lo sucio que puede llegar a estar TU
+    // panel sucio: escalado sobre lo sucio que puede llegar a estar TU
     // instalación (Lmax, según entorno/inclinación/zona), no un tope fijo —
-    // así el panel y el medidor llegan a "muy sucio" según se acerque a su
-    // propio máximo, sea cual sea el entorno, en vez de solo en los casos
-    // más extremos.
-    var sat = clamp(R.lossNow/R.Lmax, 0, 1);
+    // así el panel y el medidor avanzan hacia "muy sucio" según se acerque a
+    // su propio máximo, sea cual sea el entorno. El *0.8 suaviza el ritmo:
+    // a los 2-3 años se ve claramente sucio, pero sin llegar al tope, para
+    // que siga transmitiendo que empeora cuanto más se tarda en limpiar.
+    var sat = clamp((R.lossNow/R.Lmax) * 0.8, 0, 1);
     $("dustLayer").setAttribute("opacity", (sat*0.92).toFixed(2));
     $("birdGroup").setAttribute("opacity", (clamp((sat-0.4)/0.6,0,1)*0.85).toFixed(2));
     $("meterFill").style.width = (sat*100).toFixed(0) + "%";
