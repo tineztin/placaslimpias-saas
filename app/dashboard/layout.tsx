@@ -17,9 +17,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <Link href="/dashboard" className="text-slate-600 hover:text-slate-900">
                 Instalación
               </Link>
-              <Link href="/dashboard/settings" className="text-slate-600 hover:text-slate-900">
-                Configuración
-              </Link>
               <Link href="/dashboard/leads" className="text-slate-600 hover:text-slate-900">
                 Leads
               </Link>

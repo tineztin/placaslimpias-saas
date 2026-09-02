@@ -1,15 +1,29 @@
 import { redirect } from "next/navigation";
 import { getOwnSubscriber } from "@/lib/subscribers";
-import CopySnippet from "./copy-snippet";
+import Step from "./step";
+import SettingsForm from "./settings/settings-form";
 import LivePreview from "./live-preview";
+import CopySnippet from "./copy-snippet";
 import { createCheckoutSession, createPortalSession } from "./actions";
 
 export default async function DashboardHome() {
   const subscriber = await getOwnSubscriber();
   if (!subscriber) redirect("/dashboard/onboarding");
 
-  const snippet = `<div id="solar-calc" data-api-key="${subscriber.api_key}"></div>
-<script src="https://calculadorasolar.top/widget.js" async></script>`;
+  // <iframe> literal (no un <div>+<script> que lo crea por detrás): así se
+  // ve exactamente qué se está pegando. El pequeño <script> de al lado solo
+  // ajusta la altura, escuchando el mismo postMessage que ya emite
+  // calculadora.html.
+  const snippet = `<iframe id="solarcalc-frame" src="https://calculadorasolar.top/embed?key=${subscriber.api_key}" style="width:100%;height:560px;border:0;display:block" title="Calculadora Solar"></iframe>
+<script>
+window.addEventListener("message", function (e) {
+  var f = document.getElementById("solarcalc-frame");
+  if (!f || e.source !== f.contentWindow) return;
+  var d = e.data;
+  if (!d || d.source !== "solarcalc" || d.type !== "height") return;
+  f.style.height = Math.min(4000, Math.max(400, Math.round(d.height))) + "px";
+});
+</script>`;
 
   const statusLabel: Record<string, string> = {
     active: "Activa",
@@ -23,7 +37,7 @@ export default async function DashboardHome() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-semibold text-slate-900">{subscriber.company_name}</h1>
@@ -37,8 +51,8 @@ export default async function DashboardHome() {
           </span>
         </div>
         <p className="mt-1 text-sm text-slate-500">
-          Pega este código en tu web para mostrar la calculadora. Funciona en cualquier sitio:
-          WordPress, Webflow, Shopify o HTML a mano.
+          Configura tu marca, comprueba cómo queda y pega el código en tu web. Funciona en
+          cualquier sitio: WordPress, Webflow, Shopify o HTML a mano.
         </p>
       </div>
 
@@ -67,40 +81,37 @@ export default async function DashboardHome() {
         )
       )}
 
-      <CopySnippet snippet={snippet} />
+      <Step n={1} title="Configura tu marca" description="Logo, color, dónde recibir avisos y qué dominios pueden mostrarla.">
+        <SettingsForm subscriber={subscriber} />
+      </Step>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900">Previsualizar</h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Esto es un iframe real, exactamente lo que verán tus clientes. Cualquier cambio que
-              guardes en Configuración se refleja aquí al momento (recarga la página para verlo).
-            </p>
-          </div>
-          <a
-            href={`/embed?key=${subscriber.api_key}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-700"
-          >
-            Abrir en pestaña nueva →
-          </a>
-        </div>
-        <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
+      <Step
+        n={2}
+        title="Previsualiza"
+        description="Iframe real, exactamente lo que verán tus clientes. Si acabas de guardar cambios en el paso 1, recarga esta página para verlos aquí."
+      >
+        <div className="overflow-hidden rounded-lg border border-slate-200">
           <LivePreview apiKey={subscriber.api_key} />
         </div>
-      </div>
+        <a
+          href={`/embed?key=${subscriber.api_key}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
+        >
+          Abrir en pestaña nueva →
+        </a>
+        {(!subscriber.allowed_domains || subscriber.allowed_domains.length === 0) && (
+          <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+            Aún no has añadido ningún dominio autorizado en el paso 1. Tu calculadora solo se
+            mostrará en calculadorasolar.top hasta que lo hagas.
+          </div>
+        )}
+      </Step>
 
-      {(!subscriber.allowed_domains || subscriber.allowed_domains.length === 0) && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-          Aún no has añadido ningún dominio autorizado en{" "}
-          <a href="/dashboard/settings" className="font-medium text-blue-600 hover:text-blue-700">
-            Configuración
-          </a>
-          . Tu calculadora solo se mostrará en calculadorasolar.top hasta que lo hagas.
-        </div>
-      )}
+      <Step n={3} title="Copia el código" description="Pega esto en tu web, donde quieras que aparezca la calculadora.">
+        <CopySnippet snippet={snippet} />
+      </Step>
     </div>
   );
 }

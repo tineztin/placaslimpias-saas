@@ -634,7 +634,14 @@ details.adv > .adv-body{padding-top:14px}
       "Calculadora facilitada por " + CFG.brand + ".";
 
     var logo = document.getElementById("brandLogo");
-    if(CFG.logo){ logo.src = CFG.logo; logo.alt = CFG.brand; logo.hidden = false; }
+    if(CFG.logo){
+      logo.src = CFG.logo; logo.alt = CFG.brand; logo.hidden = false;
+      document.getElementById("logoPlaceholder").hidden = true;
+    } else {
+      // Sin logo subido: el hueco del logo muestra el nombre de la empresa
+      // en vez del texto de relleno genérico.
+      document.getElementById("logoPlaceholder").textContent = CFG.brand;
+    }
 
     var pl = document.getElementById("privacyLink");
     if(CFG.privacy){ pl.href = CFG.privacy; } else { pl.removeAttribute("href"); }

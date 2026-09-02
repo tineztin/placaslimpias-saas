@@ -32,8 +32,8 @@ export default function CopySnippet({ snippet }: { snippet: string }) {
         <code>{snippet}</code>
       </pre>
       <p className="mt-3 text-xs text-slate-400">
-        El script crea automáticamente un iframe con tu calculadora dentro de ese div — no hace
-        falta que añadas ningún &lt;iframe&gt; a mano.
+        Es un iframe real: pégalo tal cual donde quieras que aparezca. El &lt;script&gt; de al lado
+        solo ajusta su altura automáticamente.
       </p>
     </div>
   );

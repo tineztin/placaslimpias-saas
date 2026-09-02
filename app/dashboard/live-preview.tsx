@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// El mismo iframe que carga widget.js en la web de un cliente, embebido
-// aquí para que se vea (es un <iframe> real, con la marca aplicada tal
-// cual) y para que sea evidente que cualquier cambio en Configuración se
-// refleja al momento — /embed no cachea nada del lado del servidor.
+// El mismo iframe que se pega en la web de un cliente (ver el snippet del
+// Paso 3), embebido aquí para que se vea con la marca aplicada tal cual, y
+// para que sea evidente que un cambio en el Paso 1 se refleja al momento —
+// /embed no cachea nada del lado del servidor.
 export default function LivePreview({ apiKey }: { apiKey: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(560);
