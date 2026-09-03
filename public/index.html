@@ -643,6 +643,48 @@
       }
       .floating-cta-text { display: none; }
     }
+
+    /* Entrada animada de la hero: escalonada y rápida (menos de 1s en
+       total), puro CSS (sin esperar a ningún script) para que sea lo
+       primero que se vea al cargar, no algo que dependa de hacer scroll. */
+    @keyframes heroIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes heroImgIn {
+      from { opacity: 0; transform: translateX(24px) scale(0.98); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    .hero-text .badge,
+    .hero-text h1,
+    .hero-text .sub,
+    .hero-text .features,
+    .hero-text .btn {
+      opacity: 0;
+      animation: heroIn 0.55s ease forwards;
+    }
+    .hero-text .badge { animation-delay: 0.05s; }
+    .hero-text h1 { animation-delay: 0.12s; }
+    .hero-text .sub { animation-delay: 0.22s; }
+    .hero-text .features { animation-delay: 0.32s; }
+    .hero-text .btn { animation-delay: 0.42s; }
+    .hero-image {
+      opacity: 0;
+      animation: heroImgIn 0.7s ease forwards;
+      animation-delay: 0.25s;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-text .badge,
+      .hero-text h1,
+      .hero-text .sub,
+      .hero-text .features,
+      .hero-text .btn,
+      .hero-image {
+        opacity: 1;
+        animation: none;
+        transform: none;
+      }
+    }
   </style>
 </head>
 <body>
