@@ -5,6 +5,9 @@ import { Resend } from "resend";
 // verificado ahí con sus registros DNS; si no está verificado, Resend
 // rechaza el envío).
 const FROM = "Calculadora Solar <notificaciones@calculadorasolar.net>";
+// notificaciones@ no tiene buzón propio (solo envía); las respuestas de
+// quien conteste a uno de estos emails deben llegar a un buzón real.
+const REPLY_TO = "hola@calculadorasolar.net";
 
 // Cabecera de marca compartida por todos los emails transaccionales. Se usa
 // el PNG (no el SVG del sitio) porque los clientes de correo no soportan
@@ -75,6 +78,7 @@ export async function sendLeadNotification({ to, companyName, lead, calc }: Lead
     await resend.emails.send({
       from: FROM,
       to,
+      replyTo: REPLY_TO,
       subject: `Nuevo lead: ${lead.nombre} — ${companyName}`,
       html,
     });
@@ -119,6 +123,7 @@ export async function sendWelcomeEmail(to: string, companyName: string) {
     await resend.emails.send({
       from: FROM,
       to: [to],
+      replyTo: REPLY_TO,
       subject: "Bienvenido a Calculadora Solar — siguientes pasos",
       html,
     });
