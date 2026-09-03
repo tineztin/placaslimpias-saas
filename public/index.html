@@ -544,6 +544,105 @@
       color: var(--ink-3);
       line-height: 1.6;
     }
+
+    /* Scroll suave para los enlaces del menú (#features, #pricing, #demo) */
+    @media (prefers-reduced-motion: no-preference) {
+      html { scroll-behavior: smooth; }
+    }
+
+    /* Scroll-reveal: las secciones aparecen suavemente al entrar en pantalla.
+       Sin JS (o con prefers-reduced-motion) el contenido se queda visible
+       desde el principio, nunca depende del script para poder leerse. */
+    .js-reveal .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .js-reveal .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .grid .reveal:nth-child(2) { transition-delay: 0.08s; }
+    .grid .reveal:nth-child(3) { transition-delay: 0.16s; }
+    .grid .reveal:nth-child(4) { transition-delay: 0.24s; }
+    .grid .reveal:nth-child(5) { transition-delay: 0.32s; }
+    .grid .reveal:nth-child(6) { transition-delay: 0.4s; }
+    @media (prefers-reduced-motion: reduce) {
+      .js-reveal .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    }
+
+    /* FAQ como acordeón nativo (<details>), reaprovechando el estilo .card */
+    .faq-item summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary .chevron {
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+      color: var(--ink-3);
+    }
+    .faq-item[open] summary .chevron { transform: rotate(180deg); color: var(--accent); }
+    .faq-item p { margin: 14px 0 0; color: var(--ink-2); }
+    .faq-item[open] p { animation: faqFade 0.25s ease; }
+    @keyframes faqFade {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* CTA flotante: aparece al pasar la hero, se oculta de nuevo al llegar
+       al bloque de CTA final para no duplicar el mismo mensaje dos veces. */
+    .floating-cta {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 14px 10px 18px;
+      box-shadow: 0 14px 32px rgba(14, 22, 32, 0.16);
+      opacity: 0;
+      transform: translateY(14px);
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .floating-cta.is-shown {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .floating-cta-text {
+      font-size: 13px;
+      color: var(--ink-2);
+      white-space: nowrap;
+    }
+    .floating-cta-text strong { color: var(--ink); }
+    .floating-cta .btn {
+      margin-top: 0;
+      padding: 10px 18px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    @media (max-width: 640px) {
+      .floating-cta {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        border-radius: 12px;
+        justify-content: center;
+      }
+      .floating-cta-text { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -625,32 +724,32 @@
       <p class="sub">Todo lo que necesitas para convertir visitas en clientes, sin tocar el resto de tu web</p>
 
       <div class="grid">
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">📊</div>
           <h3>Crea urgencia sola</h3>
           <p>Tus clientes ven exactamente cuánto pierden por placas sucias. La urgencia de limpiar aparece sin que digas nada.</p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">📝</div>
           <h3>Contactos ya interesados</h3>
           <p>Recibes nombre, email, teléfono, municipio y presupuesto estimado. Todo listo para llamar y cerrar.</p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">⚙️</div>
           <h3>Instalación en minutos, no en días</h3>
           <p>2-5 minutos. Un código, lo pegas y listo. Compatible con WordPress, Wix, Shopify, HTML puro.</p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">📱</div>
           <h3>Perfecta en cualquier pantalla</h3>
           <p>Funciona igual de bien en móvil, tablet y ordenador. Carga en menos de 1 segundo.</p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">🎯</div>
           <h3>Cálculos realistas por zona</h3>
           <p>Ajusta el resultado según la radiación solar y el clima de cada región. Presupuestos creíbles, no genéricos.</p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">💰</div>
           <h3>Un precio que se paga solo</h3>
           <p>9€+IVA al mes, contactos ilimitados, sin permanencia. Con un solo cliente nuevo ya lo has amortizado.</p>
@@ -665,7 +764,7 @@
       <h2>Prueba la calculadora</h2>
       <p class="sub">Esto es exactamente lo que verán tus clientes cuando entren en tu web:</p>
 
-      <div class="calculator-section">
+      <div class="calculator-section reveal">
         <div class="calculator-frame">
           <iframe
             src="/calculadora.html"
@@ -690,7 +789,7 @@
       <p class="sub">Un solo plan, sin sorpresas. Contactos ilimitados. Sin permanencia.</p>
 
       <div style="max-width: 500px; margin: 0 auto;">
-        <div class="pricing-box">
+        <div class="pricing-box reveal">
           <h3>Plan Profesional</h3>
           <div class="price">9€<span style="font-size: 24px; color: var(--ink-2);">+IVA</span></div>
           <div class="period">/ mes (10,89€ con IVA)</div>
@@ -714,7 +813,7 @@
           </p>
         </div>
 
-        <div style="margin-top: 32px; padding: 28px; background: var(--accent-light); border-radius: 12px; text-align: center;">
+        <div class="reveal" style="margin-top: 32px; padding: 28px; background: var(--accent-light); border-radius: 12px; text-align: center;">
           <h3 style="margin: 0 0 6px; font-size: 18px;">¿Necesitas algo a medida?</h3>
           <p style="color: var(--ink-2); font-size: 14px; margin: 0 0 20px; max-width: 46ch; margin-left: auto; margin-right: auto;">
             Integración con tu CRM, notificaciones por WhatsApp, desarrollos personalizados, consultoría… Cuéntanos qué necesitas y te respondemos en menos de 24h.
@@ -734,17 +833,17 @@
       <p class="sub">Tres pasos, cero complicaciones</p>
 
       <div class="grid">
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">1</div>
           <h3>Pegas el código en tu web</h3>
           <p>Copias un iframe y lo pegas donde quieras. 2 minutos, sin tocar el resto de tu web.</p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">2</div>
           <h3>Tu cliente calcula lo que pierde</h3>
           <p>Introduce su zona y unos datos básicos. Ve al instante cuánto le cuesta la suciedad al año.</p>
         </div>
-        <div class="card">
+        <div class="card reveal">
           <div class="icon-badge">3</div>
           <h3>Te escribe a ti</h3>
           <p>Recibes su nombre, email, teléfono y presupuesto estimado directamente en tu correo.</p>
@@ -769,46 +868,46 @@
     <div class="wrap">
       <h2>Preguntas Frecuentes</h2>
       
-      <div class="grid" style="grid-template-columns: 1fr; gap: 24px;">
-        <div class="card">
-          <h3>¿Cuánto tiempo tarda instalar?</h3>
+      <div class="grid" style="grid-template-columns: 1fr; gap: 16px;">
+        <details class="card reveal faq-item">
+          <summary>¿Cuánto tiempo tarda instalar?<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
           <p>Entre 2 y 5 minutos. Te proporcionamos un código iframe que pegas en tu web. No es necesario cambiar tu código ni contratar desarrolladores.</p>
-        </div>
+        </details>
 
-        <div class="card">
-          <h3>¿Cómo recibo los contactos?</h3>
+        <details class="card reveal faq-item">
+          <summary>¿Cómo recibo los contactos?<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
           <p>Por email automático cada vez que un cliente completa la calculadora. Incluye: nombre, email, teléfono, municipio, energía perdida y presupuesto estimado.</p>
-        </div>
+        </details>
 
-        <div class="card">
-          <h3>¿Funciona en cualquier web?</h3>
+        <details class="card reveal faq-item">
+          <summary>¿Funciona en cualquier web?<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
           <p>Sí. WordPress, Wix, Shopify, Squarespace, HTML puro, Webflow, etc. Cualquier plataforma que permita insertar HTML personalizado.</p>
-        </div>
+        </details>
 
-        <div class="card">
-          <h3>¿Puedo cancelar en cualquier momento?</h3>
+        <details class="card reveal faq-item">
+          <summary>¿Puedo cancelar en cualquier momento?<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
           <p>Completamente. Sin permanencia, sin penalización. Cancela tu suscripción desde tu panel cuando quieras. Seguirás recibiendo leads hasta fin de mes.</p>
-        </div>
+        </details>
 
-        <div class="card">
-          <h3>¿Es seguro el pago?</h3>
+        <details class="card reveal faq-item">
+          <summary>¿Es seguro el pago?<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
           <p>100% seguro. Stripe gestiona todos los pagos (la misma pasarela que usan Amazon, Shopify o Google). Tú solo autorizas la suscripción una vez. Puedes cancelarla cuando quieras desde tu panel.</p>
-        </div>
+        </details>
 
-        <div class="card">
-          <h3>¿Qué datos compartir?</h3>
+        <details class="card reveal faq-item">
+          <summary>¿Qué datos compartir?<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
           <p>Solo tu nombre de empresa. Tus clientes ingresan sus datos en la calculadora (nombre, email, teléfono, municipio). Tú recibes los contactos en tu email privado.</p>
-        </div>
+        </details>
 
-        <div class="card">
-          <h3>¿Hay soporte?</h3>
+        <details class="card reveal faq-item">
+          <summary>¿Hay soporte?<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
           <p>Sí. Soporte por email. Te ayudamos a instalar la calculadora, personalizar el branding y resolver cualquier duda técnica.</p>
-        </div>
+        </details>
 
-        <div class="card">
-          <h3>¿Puedo personalizar la calculadora?</h3>
+        <details class="card reveal faq-item">
+          <summary>¿Puedo personalizar la calculadora?<svg class="chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
           <p>Sí. Logo, colores, textos... todo se puede ajustar. Contacta con nosotros para cambios personalizados más avanzados.</p>
-        </div>
+        </details>
       </div>
     </div>
   </section>
@@ -847,6 +946,68 @@
     </div>
   </footer>
 
+  <div class="floating-cta" id="floatingCta">
+    <div class="floating-cta-text"><strong>9€+IVA/mes</strong> · sin permanencia</div>
+    <a href="/login" class="btn btn-primary">→ Suscribirme</a>
+  </div>
+
+  <script>
+    (function () {
+      // Scroll-reveal: solo se activa si hay JS e IntersectionObserver; si
+      // no, .reveal nunca pasa a estar oculto (ver CSS, .js-reveal es quien
+      // activa opacity:0) así que el contenido siempre es legible.
+      var reveals = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window && reveals.length) {
+        document.documentElement.classList.add('js-reveal');
+        var revealObserver = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                revealObserver.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
+        );
+        reveals.forEach(function (el) { revealObserver.observe(el); });
+      }
+
+      // CTA flotante: aparece al perder de vista la hero, se oculta otra
+      // vez al llegar al bloque de CTA final (mismo mensaje, no hace falta
+      // repetirlo dos veces a la vez).
+      var floatingCta = document.getElementById('floatingCta');
+      var hero = document.querySelector('section.hero');
+      var ctaBar = document.querySelector('.cta-bar');
+      if (floatingCta && hero && 'IntersectionObserver' in window) {
+        var pastHero = false;
+        var nearCtaBar = false;
+        var updateFloatingCta = function () {
+          floatingCta.classList.toggle('is-shown', pastHero && !nearCtaBar);
+        };
+        new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              pastHero = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+              updateFloatingCta();
+            });
+          },
+          { threshold: 0 },
+        ).observe(hero);
+        if (ctaBar) {
+          new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                nearCtaBar = entry.isIntersecting;
+                updateFloatingCta();
+              });
+            },
+            { threshold: 0, rootMargin: '0px 0px -20% 0px' },
+          ).observe(ctaBar);
+        }
+      }
+    })();
+  </script>
   <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
