@@ -15,11 +15,25 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const supabase = createClient();
 
-    // El cliente de navegador (@supabase/ssr, pensado para el flujo PKCE con
-    // ?code=) no detecta automáticamente el token de recuperación clásico
-    // que trae el enlace del email en el fragmento de la URL
-    // (#access_token=...&refresh_token=...&type=recovery) — así que lo
-    // leemos a mano y abrimos la sesión temporal explícitamente.
+    // Caso 1: flujo PKCE (el formato real que envían nuestros emails de
+    // recuperación) — el enlace trae ?code=... en la query. El cliente de
+    // navegador NO lo intercambia solo al cargar la página, pese a que sea
+    // "su" flujo por defecto: hay que llamar a exchangeCodeForSession
+    // explícitamente, o la página se queda esperando para siempre.
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) {
+          window.history.replaceState(null, "", window.location.pathname);
+          setReady(true);
+        }
+      });
+      return;
+    }
+
+    // Caso 2: flujo clásico — el token va en el fragmento de la URL
+    // (#access_token=...&refresh_token=...&type=recovery), que tampoco se
+    // detecta solo, así que se lee a mano y se abre la sesión con él.
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const accessToken = hash.get("access_token");
     const refreshToken = hash.get("refresh_token");
@@ -36,8 +50,8 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    // Alternativa: el SDK ya procesó el enlace (p. ej. flujo PKCE con
-    // ?code=) antes de que este efecto se ejecutara.
+    // Caso 3: ya había una sesión válida (recarga de la página, u otro
+    // origen) o llega el evento PASSWORD_RECOVERY por su cuenta.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event) => {
