@@ -1,80 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import * as Sentry from "@sentry/nextjs";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+function ResetPasswordForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-  // Distingue "no hay ningún token en la URL" (el usuario abrió /reset-password
-  // a pelo) de "había un token pero falló al canjearlo" (caducado, ya usado,
-  // o algo roto) — son problemas distintos y necesitan mensajes distintos.
-  const [linkError, setLinkError] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState(searchParams.get("error") === "link_invalido");
 
+  // La sesión de recuperación ya se estableció del lado del servidor en
+  // /auth/confirm (ver ese route handler) antes de llegar aquí: al enlace
+  // se le añaden nuestras propias cookies, así que solo hace falta leerla,
+  // no volver a canjear ningún token.
   useEffect(() => {
+    if (linkError) return;
     const supabase = createClient();
-
-    // Caso 1: flujo PKCE (el formato real que envían nuestros emails de
-    // recuperación) — el enlace trae ?code=... en la query. El cliente de
-    // navegador NO lo intercambia solo al cargar la página, pese a que sea
-    // "su" flujo por defecto: hay que llamar a exchangeCodeForSession
-    // explícitamente, o la página se queda esperando para siempre.
-    const code = new URLSearchParams(window.location.search).get("code");
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (!error) {
-          window.history.replaceState(null, "", window.location.pathname);
-          setReady(true);
-        } else {
-          console.error("exchangeCodeForSession falló:", error);
-          Sentry.captureException(error, { tags: { flow: "reset-password-pkce" } });
-          setLinkError(error.message);
-        }
-      });
-      return;
-    }
-
-    // Caso 2: flujo clásico — el token va en el fragmento de la URL
-    // (#access_token=...&refresh_token=...&type=recovery), que tampoco se
-    // detecta solo, así que se lee a mano y se abre la sesión con él.
-    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    const accessToken = hash.get("access_token");
-    const refreshToken = hash.get("refresh_token");
-    const type = hash.get("type");
-
-    if (type === "recovery" && accessToken && refreshToken) {
-      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(({ error }) => {
-        if (!error) {
-          // Limpia el token de la barra de direcciones una vez usado.
-          window.history.replaceState(null, "", window.location.pathname);
-          setReady(true);
-        } else {
-          console.error("setSession falló:", error);
-          Sentry.captureException(error, { tags: { flow: "reset-password-hash" } });
-          setLinkError(error.message);
-        }
-      });
-      return;
-    }
-
-    // Caso 3: ya había una sesión válida (recarga de la página, u otro
-    // origen) o llega el evento PASSWORD_RECOVERY por su cuenta.
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setReady(true);
-    });
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
+      else setLinkError(true);
     });
-    return () => subscription.unsubscribe();
-  }, []);
+  }, [linkError]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
