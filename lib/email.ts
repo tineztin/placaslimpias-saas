@@ -6,6 +6,15 @@ import { Resend } from "resend";
 // rechaza el envío).
 const FROM = "Calculadora Solar <notificaciones@calculadorasolar.top>";
 
+// Cabecera de marca compartida por todos los emails transaccionales. Se usa
+// el PNG (no el SVG del sitio) porque los clientes de correo no soportan
+// SVG de forma fiable.
+const EMAIL_HEADER = `
+    <div style="text-align:center;margin-bottom:28px">
+      <img src="https://calculadorasolar.top/email-logo.png" width="48" height="48" alt="Calculadora Solar" style="display:block;margin:0 auto 10px">
+      <div style="font-size:15px;font-weight:700;color:#0E1620">Calculadora <span style="color:#0066B2">Solar</span></div>
+    </div>`;
+
 const eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 const fmtEur = (v: unknown) => (typeof v === "number" ? eur.format(v) : "—");
 const fmtNum = (v: unknown) => (typeof v === "number" ? String(v) : "—");
@@ -53,6 +62,7 @@ export async function sendLeadNotification({ to, companyName, lead, calc }: Lead
 
   const html = `
     <div style="font-family:system-ui,-apple-system,Arial,sans-serif;max-width:480px;margin:0 auto">
+      ${EMAIL_HEADER}
       <h2 style="font-size:16px;color:#0E1620;margin:0 0 4px">Nuevo lead en tu calculadora</h2>
       <p style="font-size:13px;color:#6B7A89;margin:0 0 16px">${escapeHtml(companyName)}</p>
       <table style="width:100%;border-collapse:collapse">${rowsHtml}</table>
@@ -84,6 +94,7 @@ export async function sendWelcomeEmail(to: string, companyName: string) {
 
   const html = `
     <div style="font-family:system-ui,-apple-system,Arial,sans-serif;max-width:480px;margin:0 auto">
+      ${EMAIL_HEADER}
       <h2 style="font-size:18px;color:#0E1620;margin:0 0 4px">Bienvenido a Calculadora Solar</h2>
       <p style="font-size:14px;color:#33414F;line-height:1.6;margin:12px 0">
         Hola${companyName ? " " + escapeHtml(companyName) : ""}, tu cuenta ya está creada. Solo
