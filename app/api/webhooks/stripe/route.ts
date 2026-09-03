@@ -28,12 +28,16 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
-  async function setStatusByCustomer(customerId: string, status: "active" | "past_due" | "canceled") {
-    const { error } = await admin
-      .from("subscribers")
-      .update({ subscription_status: status })
-      .eq("stripe_customer_id", customerId);
-    if (error) console.error("No se pudo actualizar subscription_status:", error);
+  async function updateByCustomer(
+    customerId: string,
+    fields: {
+      subscription_status: "active" | "past_due" | "canceled";
+      cancel_at_period_end?: boolean;
+      current_period_end?: string | null;
+    },
+  ) {
+    const { error } = await admin.from("subscribers").update(fields).eq("stripe_customer_id", customerId);
+    if (error) console.error("No se pudo actualizar el estado de la suscripción:", error);
   }
 
   switch (event.type) {
@@ -56,7 +60,15 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId =
         typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
-      await setStatusByCustomer(customerId, mapStripeStatus(subscription.status));
+      // current_period_end vive en el subscription item (no en el nivel
+      // superior de Subscription en esta versión de la API); solo tenemos
+      // un item por suscripción (un único precio, cantidad 1).
+      const periodEndUnix = subscription.items.data[0]?.current_period_end;
+      await updateByCustomer(customerId, {
+        subscription_status: mapStripeStatus(subscription.status),
+        cancel_at_period_end: subscription.cancel_at_period_end,
+        current_period_end: periodEndUnix ? new Date(periodEndUnix * 1000).toISOString() : null,
+      });
       break;
     }
 
@@ -64,7 +76,12 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId =
         typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
-      await setStatusByCustomer(customerId, "canceled");
+      // Ya cancelada de verdad: cancel_at_period_end deja de tener sentido
+      // como "aviso pendiente", así que se limpia junto con el estado.
+      await updateByCustomer(customerId, {
+        subscription_status: "canceled",
+        cancel_at_period_end: false,
+      });
       break;
     }
 

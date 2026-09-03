@@ -26,6 +26,12 @@ window.addEventListener("message", function (e) {
 });
 </script>`;
 
+  const periodEndLabel = subscriber.current_period_end
+    ? new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "long", year: "numeric" }).format(
+        new Date(subscriber.current_period_end),
+      )
+    : null;
+
   const statusLabel: Record<string, string> = {
     active: "Activa",
     past_due: "Pago pendiente",
@@ -73,13 +79,30 @@ window.addEventListener("message", function (e) {
           </form>
         </div>
       ) : (
-        subscriber.stripe_customer_id && (
-          <form action={createPortalSession}>
-            <button type="submit" className="text-sm font-medium text-blue-600 hover:text-blue-700">
-              Gestionar suscripción y facturas →
-            </button>
-          </form>
-        )
+        <div className="space-y-3">
+          {subscriber.cancel_at_period_end && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+              Has cancelado tu suscripción. Tu calculadora sigue funcionando con normalidad
+              {periodEndLabel ? ` hasta el ${periodEndLabel}` : " hasta el final del periodo ya pagado"}.
+              Puedes reactivarla en cualquier momento desde el portal de facturación.
+            </div>
+          )}
+          {subscriber.stripe_customer_id && (
+            <form action={createPortalSession}>
+              <button type="submit" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                Gestionar suscripción y facturas →
+              </button>
+            </form>
+          )}
+        </div>
+      )}
+
+      {subscriber.notification_emails.length === 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          No tienes ningún email de aviso configurado: tus leads se están guardando con normalidad,
+          pero no te llega ningún correo cuando entra uno nuevo. Añade al menos uno en el paso 1,
+          &quot;Configura tu marca&quot;.
+        </div>
       )}
 
       <StepTabs
