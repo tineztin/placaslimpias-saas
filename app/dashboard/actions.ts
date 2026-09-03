@@ -196,6 +196,68 @@ export async function createPortalSession() {
   redirect(session.url);
 }
 
+export type DeleteAccountState = { error?: string };
+
+// Baja definitiva de la cuenta (derecho de supresión del RGPD, ver
+// política de privacidad). Antes de borrar nada cancela cualquier
+// suscripción de Stripe activa: si eso fallara y borrásemos igualmente la
+// cuenta, el cliente se quedaría sin panel para cancelarla él mismo pero
+// Stripe le seguiría cobrando cada mes, así que se aborta la baja hasta
+// que el cobro esté realmente cancelado. Los leads se borran en cascada
+// por la foreign key subscriber_id (ver 0001_init.sql), no hace falta
+// borrarlos aparte.
+export async function deleteAccountAction(
+  _prev: DeleteAccountState,
+  formData: FormData,
+): Promise<DeleteAccountState> {
+  const user = await requireUser();
+
+  if (String(formData.get("confirm") || "").trim().toUpperCase() !== "ELIMINAR") {
+    return { error: 'Escribe "ELIMINAR" para confirmar.' };
+  }
+
+  const admin = createAdminClient();
+  const { data: sub } = await admin
+    .from("subscribers")
+    .select("id, stripe_customer_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (sub?.stripe_customer_id) {
+    try {
+      const stripe = getStripe();
+      const subscriptions = await stripe.subscriptions.list({
+        customer: sub.stripe_customer_id,
+        status: "all",
+      });
+      for (const s of subscriptions.data) {
+        if (s.status !== "canceled" && s.status !== "incomplete_expired") {
+          await stripe.subscriptions.cancel(s.id);
+        }
+      }
+    } catch (e) {
+      return {
+        error:
+          "No se pudo cancelar tu suscripción de Stripe, así que no hemos borrado la cuenta para que no te sigan cobrando. Inténtalo de nuevo o escríbenos a hola@calculadorasolar.top. (" +
+          (e instanceof Error ? e.message : String(e)) +
+          ")",
+      };
+    }
+  }
+
+  if (sub) {
+    const { error } = await admin.from("subscribers").delete().eq("id", sub.id);
+    if (error) return { error: "No se pudo borrar tu cuenta: " + error.message };
+  }
+
+  await admin.auth.admin.deleteUser(user.id);
+
+  const supabase = await createServerClient();
+  await supabase.auth.signOut();
+
+  redirect("/login?deleted=1");
+}
+
 function splitList(raw: string): string[] {
   return raw
     .split(",")

@@ -4,6 +4,7 @@ import StepTabs from "./step-tabs";
 import SettingsForm from "./settings/settings-form";
 import LivePreview from "./live-preview";
 import CopySnippet from "./copy-snippet";
+import DeleteAccount from "./delete-account";
 import { createCheckoutSession, createPortalSession } from "./actions";
 
 export default async function DashboardHome() {
@@ -126,6 +127,8 @@ window.addEventListener("message", function (e) {
           </div>
         }
       />
+
+      <DeleteAccount />
     </div>
   );
 }
