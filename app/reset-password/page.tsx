@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
@@ -11,6 +12,10 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  // Distingue "no hay ningún token en la URL" (el usuario abrió /reset-password
+  // a pelo) de "había un token pero falló al canjearlo" (caducado, ya usado,
+  // o algo roto) — son problemas distintos y necesitan mensajes distintos.
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -26,6 +31,10 @@ export default function ResetPasswordPage() {
         if (!error) {
           window.history.replaceState(null, "", window.location.pathname);
           setReady(true);
+        } else {
+          console.error("exchangeCodeForSession falló:", error);
+          Sentry.captureException(error, { tags: { flow: "reset-password-pkce" } });
+          setLinkError(error.message);
         }
       });
       return;
@@ -45,6 +54,10 @@ export default function ResetPasswordPage() {
           // Limpia el token de la barra de direcciones una vez usado.
           window.history.replaceState(null, "", window.location.pathname);
           setReady(true);
+        } else {
+          console.error("setSession falló:", error);
+          Sentry.captureException(error, { tags: { flow: "reset-password-hash" } });
+          setLinkError(error.message);
         }
       });
       return;
@@ -86,7 +99,20 @@ export default function ResetPasswordPage() {
         <h1 className="text-lg font-semibold text-slate-900">Elige tu nueva contraseña</h1>
         <p className="mt-1 text-sm text-slate-500">Calculadora Solar — panel de suscriptor</p>
 
-        {!ready && !done && (
+        {!ready && !done && linkError && (
+          <div className="mt-6 space-y-3">
+            <p className="text-sm text-red-600">
+              Este enlace ya no es válido (puede haber caducado o usarse ya una vez).
+            </p>
+            <a
+              href="/login"
+              className="inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
+            >
+              Pide un enlace nuevo →
+            </a>
+          </div>
+        )}
+        {!ready && !done && !linkError && (
           <p className="mt-6 text-sm text-slate-500">
             Abre esta página desde el enlace que te hemos enviado por email.
           </p>
