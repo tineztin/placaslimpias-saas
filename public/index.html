@@ -1296,7 +1296,7 @@
         });
       }
 
-      setTimeout(function () {
+      function runCardsCycle() {
         if (meterFill) {
           // Reinicio instantáneo (sin transición) y, en una tarea aparte,
           // se reactiva la transición y se pone el valor final: si las dos
@@ -1315,25 +1315,33 @@
         if (euroTo) euroTo.textContent = '0';
         animateCount(euroFrom, 312, 900);
         animateCount(euroTo, 540, 900);
-      }, 750);
 
-      setTimeout(function () {
-        leadFields.forEach(function (f) {
-          if (f.el) f.el.textContent = '';
-        });
-        var chain = Promise.resolve();
-        leadFields.forEach(function (f) {
-          chain = chain
-            .then(function () {
-              return typeText(f.el, f.text, 28);
-            })
-            .then(function () {
-              return new Promise(function (r) {
-                setTimeout(r, 120);
+        setTimeout(function () {
+          leadFields.forEach(function (f) {
+            if (f.el) f.el.textContent = '';
+          });
+          var chain = Promise.resolve();
+          leadFields.forEach(function (f) {
+            chain = chain
+              .then(function () {
+                return typeText(f.el, f.text, 28);
+              })
+              .then(function () {
+                return new Promise(function (r) {
+                  setTimeout(r, 120);
+                });
               });
-            });
-        });
-      }, 950);
+          });
+        }, 200);
+      }
+
+      // Primer ciclo encajado con la entrada de la hero; luego se repite
+      // cada 5s para que las tarjetas no se queden estáticas si alguien
+      // se queda mirando la página un rato.
+      setTimeout(function () {
+        runCardsCycle();
+        setInterval(runCardsCycle, 5000);
+      }, 750);
     })();
   </script>
   <script defer src="/_vercel/insights/script.js"></script>
