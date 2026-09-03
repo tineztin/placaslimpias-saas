@@ -72,3 +72,46 @@ export async function sendLeadNotification({ to, companyName, lead, calc }: Lead
     console.error("No se pudo enviar el email de aviso del lead:", err);
   }
 }
+
+// Se dispara una sola vez, al terminar el alta en /dashboard/onboarding.
+// Igual que sendLeadNotification: si falla o no hay RESEND_API_KEY, no
+// bloquea nada, la cuenta ya está creada.
+export async function sendWelcomeEmail(to: string, companyName: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || !to) return;
+
+  const resend = new Resend(apiKey);
+
+  const html = `
+    <div style="font-family:system-ui,-apple-system,Arial,sans-serif;max-width:480px;margin:0 auto">
+      <h2 style="font-size:18px;color:#0E1620;margin:0 0 4px">Bienvenido a Calculadora Solar</h2>
+      <p style="font-size:14px;color:#33414F;line-height:1.6;margin:12px 0">
+        Hola${companyName ? " " + escapeHtml(companyName) : ""}, tu cuenta ya está creada. Solo
+        quedan tres pasos para tener la calculadora funcionando en tu web:
+      </p>
+      <ol style="font-size:14px;color:#33414F;line-height:1.8;padding-left:20px;margin:0 0 20px">
+        <li>Configura tu marca (logo, color, dominios y emails de aviso).</li>
+        <li>Previsualízala para comprobar cómo queda.</li>
+        <li>Copia el código y pégalo en tu web.</li>
+      </ol>
+      <a href="https://calculadorasolar.top/dashboard"
+         style="display:inline-block;background:#0066B2;color:#fff;text-decoration:none;
+                padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600">
+        Ir a mi panel
+      </a>
+      <p style="font-size:12px;color:#8496A6;margin-top:24px">
+        ¿Dudas? Escríbenos a hola@calculadorasolar.top.
+      </p>
+    </div>`;
+
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: [to],
+      subject: "Bienvenido a Calculadora Solar — siguientes pasos",
+      html,
+    });
+  } catch (err) {
+    console.error("No se pudo enviar el email de bienvenida:", err);
+  }
+}

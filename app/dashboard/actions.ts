@@ -3,10 +3,12 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { after } from "next/server";
 import crypto from "node:crypto";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { sendWelcomeEmail } from "@/lib/email";
 
 async function getBaseUrl(): Promise<string> {
   const h = await headers();
@@ -45,6 +47,8 @@ export async function createSubscriber(formData: FormData) {
     company_name: companyName,
   });
   if (error) throw new Error("No se pudo crear tu cuenta: " + error.message);
+
+  if (user.email) after(() => sendWelcomeEmail(user.email!, companyName));
 
   revalidatePath("/dashboard");
   redirect("/dashboard");
