@@ -334,12 +334,85 @@
       gap: 24px;
     }
 
-    .hv-card img {
-      display: block;
-      width: 260px;
+    /* Las tarjetas son HTML/CSS real, no una imagen: la sombra se renderiza
+       de forma nativa (sin el recorte en rectángulo duro que dejaba el PNG
+       en las esquinas) y cada pieza interna se puede animar por separado. */
+    .hv-card {
+      width: 300px;
       max-width: 100%;
-      height: auto;
     }
+
+    .hv-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #33414F;
+      margin-bottom: 18px;
+      letter-spacing: 0.01em;
+      text-align: center;
+    }
+    .hv-label b { color: #0E1620; }
+
+    .hv-phone {
+      background: #0E1620;
+      border: 6px solid #2B3B49;
+      border-radius: 36px;
+      padding: 20px 18px;
+      box-shadow: 0 20px 40px rgba(14, 22, 32, 0.28);
+    }
+    .hv-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #7E8FA0;
+      margin-bottom: 12px;
+    }
+    .hv-meter-track { height: 6px; background: #22303E; border-radius: 99px; overflow: hidden; }
+    .hv-meter-fill { height: 100%; width: 78%; background: #FFA500; border-radius: 99px; transition: width 1.1s ease; }
+    .hv-meter-labels { display: flex; justify-content: space-between; font-size: 9px; color: #6B7A89; margin: 6px 0 22px; }
+    .hv-result-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #7E8FA0; margin-bottom: 6px; }
+    .hv-euro {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 34px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 18px;
+      letter-spacing: -0.02em;
+    }
+    .hv-cta { background: #0B63CE; color: #fff; text-align: center; padding: 12px; border-radius: 9px; font-weight: 650; font-size: 13px; }
+
+    .hv-lead-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 20px 40px rgba(14, 22, 32, 0.16);
+    }
+    .hv-lead-top { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .hv-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #22A84A;
+      box-shadow: 0 0 0 5px rgba(34, 168, 74, 0.15);
+      flex-shrink: 0;
+    }
+    .hv-lead-top-text { font-size: 13px; font-weight: 700; color: #0E1620; }
+    .hv-lead-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px dashed #E8EDF1; min-height: 46px; }
+    .hv-lead-row:last-child { border-bottom: none; }
+    .hv-lead-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: #E6F1FB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #0B63CE;
+    }
+    .hv-lead-icon svg { width: 16px; height: 16px; }
+    .hv-lead-icon.euro { font-size: 15px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+    .hv-lead-title { font-size: 13px; font-weight: 650; color: #0E1620; min-height: 17px; }
+    .hv-lead-sub { font-size: 11px; color: #6B7A89; margin-top: 1px; }
 
     .hero-arrow {
       display: flex;
@@ -358,7 +431,7 @@
       line-height: 1.35;
     }
 
-    @container (max-width: 640px) {
+    @container (max-width: 720px) {
       .hero-visual {
         flex-direction: column;
         align-items: center;
@@ -831,13 +904,17 @@
         <div class="hero-image">
           <div class="hero-visual">
             <div class="hv-card hv-card-1">
-              <img
-                class="hv-float"
-                src="/hero-card-1.png"
-                alt="Tu cliente calcula lo que pierde: estado estimado de sus placas, la suciedad le cuesta 312 a 540 euros al año."
-                width="300"
-                height="309"
-              >
+              <div class="hv-label">Tu cliente calcula <b>lo que pierde</b></div>
+              <div class="hv-float">
+                <div class="hv-phone">
+                  <p class="hv-eyebrow">Estado estimado de sus placas</p>
+                  <div class="hv-meter-track"><div class="hv-meter-fill" id="hvMeterFill"></div></div>
+                  <div class="hv-meter-labels"><span>Limpio</span><span>Muy sucio</span></div>
+                  <p class="hv-result-label">La suciedad le cuesta cada año</p>
+                  <p class="hv-euro"><span id="hvEuroFrom">312</span>–<span id="hvEuroTo">540</span> €</p>
+                  <div class="hv-cta">Quiero el informe y un presupuesto</div>
+                </div>
+              </div>
             </div>
             <div class="hero-arrow" role="img" aria-label="En segundos, sin que hagas nada">
               <svg width="52" height="26" viewBox="0 0 64 32" fill="none">
@@ -847,13 +924,31 @@
               <span>En segundos, sin que hagas nada</span>
             </div>
             <div class="hv-card hv-card-2">
-              <img
-                class="hv-float"
-                src="/hero-card-2.png"
-                alt="Tú recibes el contacto: nuevo lead recibido con nombre, email, teléfono y presupuesto estimado."
-                width="300"
-                height="345"
-              >
+              <div class="hv-label"><b>Tú recibes</b> el contacto</div>
+              <div class="hv-float">
+                <div class="hv-lead-card">
+                  <div class="hv-lead-top">
+                    <span class="hv-dot"></span>
+                    <span class="hv-lead-top-text">Nuevo lead recibido</span>
+                  </div>
+                  <div class="hv-lead-row">
+                    <div class="hv-lead-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></div>
+                    <div><div class="hv-lead-title" id="hvLeadName">Antonio R.</div><div class="hv-lead-sub">Madrid</div></div>
+                  </div>
+                  <div class="hv-lead-row">
+                    <div class="hv-lead-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div>
+                    <div><div class="hv-lead-title" id="hvLeadEmail">antonio@correo.com</div><div class="hv-lead-sub">Email de contacto</div></div>
+                  </div>
+                  <div class="hv-lead-row">
+                    <div class="hv-lead-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.4 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></div>
+                    <div><div class="hv-lead-title" id="hvLeadPhone">622 xxx xxx</div><div class="hv-lead-sub">Teléfono</div></div>
+                  </div>
+                  <div class="hv-lead-row">
+                    <div class="hv-lead-icon euro">€</div>
+                    <div><div class="hv-lead-title" id="hvLeadBudget">312–540 € / año</div><div class="hv-lead-sub">Presupuesto estimado</div></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1160,6 +1255,92 @@
           ).observe(ctaBar);
         }
       }
+    })();
+
+    (function () {
+      // Barra "Limpio → Muy sucio", la cifra en euros y el "tecleo" de los
+      // campos del lead: el HTML ya trae el valor final correcto (para que
+      // sin JS, o con prefers-reduced-motion, se vea bien de entrada), y
+      // este script lo vacía y lo vuelve a rellenar animado, encajado en la
+      // misma ventana de tiempo en la que las tarjetas ya están entrando.
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      var meterFill = document.getElementById('hvMeterFill');
+      var euroFrom = document.getElementById('hvEuroFrom');
+      var euroTo = document.getElementById('hvEuroTo');
+      var leadFields = [
+        { el: document.getElementById('hvLeadName'), text: 'Antonio R.' },
+        { el: document.getElementById('hvLeadEmail'), text: 'antonio@correo.com' },
+        { el: document.getElementById('hvLeadPhone'), text: '622 xxx xxx' },
+        { el: document.getElementById('hvLeadBudget'), text: '312–540 € / año' },
+      ];
+
+      function animateCount(el, to, duration) {
+        if (!el) return;
+        var start = null;
+        function step(ts) {
+          if (start === null) start = ts;
+          var p = Math.min(1, (ts - start) / duration);
+          el.textContent = Math.round(p * to);
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      function typeText(el, text, speed) {
+        return new Promise(function (resolve) {
+          if (!el) return resolve();
+          el.textContent = '';
+          var i = 0;
+          var id = setInterval(function () {
+            el.textContent += text.charAt(i);
+            i++;
+            if (i >= text.length) {
+              clearInterval(id);
+              resolve();
+            }
+          }, speed);
+        });
+      }
+
+      setTimeout(function () {
+        if (meterFill) {
+          // Reinicio instantáneo (sin transición) y, en una tarea aparte,
+          // se reactiva la transición y se pone el valor final: si las dos
+          // fases van en el mismo tick de JS, el navegador las funde en un
+          // único cambio neto (78%→78%) y la animación nunca llega a
+          // dibujarse, aunque de por medio se fuerce un reflow.
+          meterFill.style.transition = 'none';
+          meterFill.style.width = '0%';
+          void meterFill.offsetWidth;
+          setTimeout(function () {
+            meterFill.style.transition = '';
+            meterFill.style.width = '78%';
+          }, 30);
+        }
+        if (euroFrom) euroFrom.textContent = '0';
+        if (euroTo) euroTo.textContent = '0';
+        animateCount(euroFrom, 312, 900);
+        animateCount(euroTo, 540, 900);
+      }, 750);
+
+      setTimeout(function () {
+        leadFields.forEach(function (f) {
+          if (f.el) f.el.textContent = '';
+        });
+        var chain = Promise.resolve();
+        leadFields.forEach(function (f) {
+          chain = chain
+            .then(function () {
+              return typeText(f.el, f.text, 28);
+            })
+            .then(function () {
+              return new Promise(function (r) {
+                setTimeout(r, 120);
+              });
+            });
+        });
+      }, 950);
     })();
   </script>
   <script defer src="/_vercel/insights/script.js"></script>
