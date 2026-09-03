@@ -50,7 +50,10 @@ function LoginForm() {
       const { error } = await supabase.auth.signUp({ email, password });
       setLoading(false);
       if (error) return setError(traducirError(error.message));
-      // Con confirmación de email desactivada, signUp ya deja sesión iniciada.
+      // Si la confirmación de email está activada (lo está en producción),
+      // signUp no deja sesión iniciada hasta que el usuario confirma — de
+      // ahí las dos ramas: con sesión ya se puede entrar, sin sesión hay que
+      // avisar de que revise su email.
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         router.push(next);
@@ -163,5 +166,11 @@ function traducirError(msg: string): string {
   if (/invalid login credentials/i.test(msg)) return "Email o contraseña incorrectos.";
   if (/already registered/i.test(msg)) return "Ya existe una cuenta con ese email.";
   if (/password.*least/i.test(msg)) return "La contraseña debe tener al menos 6 caracteres.";
+  if (/email rate limit/i.test(msg)) {
+    return "Hemos enviado demasiados emails en poco tiempo. Espera unos minutos y vuelve a intentarlo.";
+  }
+  if (/(only request this after|security purposes)/i.test(msg)) {
+    return "Espera unos segundos antes de volver a pedirlo.";
+  }
   return msg;
 }

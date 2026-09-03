@@ -26,16 +26,26 @@ async function requireUser() {
   return user;
 }
 
+export type CreateSubscriberState = { error?: string };
+
 // Toda escritura en subscribers pasa por aquí (Server Action = siempre
 // servidor) con la service role key. RLS solo da SELECT a authenticated a
 // propósito — ver supabase/migrations/0001_init.sql — así que esta acción es
 // la única vía de escritura, y por eso vuelve a comprobar explícitamente que
 // la fila pertenece al usuario antes de tocarla.
-export async function createSubscriber(formData: FormData) {
+//
+// Firma compatible con useActionState (nunca lanza) para que un nombre de
+// empresa inválido muestre un error inline en vez de la pantalla de error
+// genérica — la validación del navegador (required/minLength) ya lo impide
+// en el caso normal, pero esto es lo que se ejecuta si alguien la salta.
+export async function createSubscriber(
+  _prev: CreateSubscriberState,
+  formData: FormData,
+): Promise<CreateSubscriberState> {
   const user = await requireUser();
   const companyName = String(formData.get("company_name") || "").trim().slice(0, 120);
   if (companyName.length < 2) {
-    throw new Error("Indica el nombre de tu empresa.");
+    return { error: "Indica el nombre de tu empresa." };
   }
 
   const admin = createAdminClient();
@@ -46,7 +56,7 @@ export async function createSubscriber(formData: FormData) {
     api_key: apiKey,
     company_name: companyName,
   });
-  if (error) throw new Error("No se pudo crear tu cuenta: " + error.message);
+  if (error) return { error: "No se pudo crear tu cuenta: " + error.message };
 
   if (user.email) after(() => sendWelcomeEmail(user.email!, companyName));
 
