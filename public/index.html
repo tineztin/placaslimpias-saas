@@ -317,15 +317,63 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 20px 40px rgba(0, 102, 178, 0.2);
-      background: #0E1620;
+      background:
+        radial-gradient(circle at 80% 6%, rgba(30, 136, 229, 0.35) 0%, rgba(30, 136, 229, 0) 60%),
+        linear-gradient(160deg, #0E1620 0%, #16222f 100%);
+      padding: 40px 36px;
+      container-type: inline-size;
     }
 
-    /* Ancho completo, alto automático según la proporción real del PNG:
-       nunca se recorta ni se reencuadra, sea cual sea el ancho de pantalla. */
-    .hero-image img {
+    /* Dos piezas independientes (no una imagen plana): cada tarjeta escala
+       por sí sola con max-width:100%, así que nunca se recorta ni se
+       reencuadra pase lo que pase con el ancho disponible; por debajo de
+       cierto ancho sencillamente pasan a apilarse en vez de ir en fila.
+       El giro de la flecha usa una container query (no una media query)
+       para que se dispare exactamente en el mismo punto en el que las
+       tarjetas ya se han apilado, sea cual sea el ancho de la ventana. */
+    .hero-visual {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .hv-card img {
       display: block;
-      width: 100%;
+      width: 260px;
+      max-width: 100%;
       height: auto;
+    }
+
+    .hero-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      align-self: center;
+      padding-top: 34px;
+    }
+
+    .hero-arrow span {
+      font-size: 12px;
+      color: #6B7A89;
+      text-align: center;
+      max-width: 110px;
+      line-height: 1.35;
+    }
+
+    @container (max-width: 700px) {
+      .hero-visual {
+        flex-direction: column;
+        align-items: center;
+      }
+      .hero-arrow {
+        flex-direction: row;
+        padding-top: 0;
+      }
+      .hero-arrow svg {
+        transform: rotate(90deg);
+      }
     }
 
     @media (max-width: 768px) {
@@ -651,10 +699,6 @@
       from { opacity: 0; transform: translateY(14px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes heroImgIn {
-      from { opacity: 0; transform: translateX(24px) scale(0.98); }
-      to { opacity: 1; transform: translateX(0) scale(1); }
-    }
     .hero-text .badge,
     .hero-text h1,
     .hero-text .sub,
@@ -668,10 +712,54 @@
     .hero-text .sub { animation-delay: 0.22s; }
     .hero-text .features { animation-delay: 0.32s; }
     .hero-text .btn { animation-delay: 0.42s; }
-    .hero-image {
+
+    /* Las dos tarjetas entran por separado, cada una desde su lado, y la
+       flecha se desvanece entre medias. Una vez asentadas, cada tarjeta
+       queda "respirando" con un balanceo suave e infinito (hv-float),
+       desfasado entre las dos para que no se muevan a la vez y se sientan
+       vivas, no como un GIF en bucle sincronizado. */
+    @keyframes heroCardInLeft {
+      from { opacity: 0; transform: translateX(-24px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes heroCardInRight {
+      from { opacity: 0; transform: translateX(24px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes heroArrowIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes hvFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes hvDashFlow {
+      to { stroke-dashoffset: -18; }
+    }
+    .hv-card {
       opacity: 0;
-      animation: heroImgIn 0.7s ease forwards;
-      animation-delay: 0.25s;
+      animation: heroCardInLeft 0.6s ease forwards;
+      animation-delay: 0.3s;
+    }
+    .hv-card-2 {
+      animation-name: heroCardInRight;
+      animation-delay: 0.5s;
+    }
+    .hero-arrow {
+      opacity: 0;
+      animation: heroArrowIn 0.5s ease forwards;
+      animation-delay: 0.55s;
+    }
+    .hv-float {
+      animation: hvFloat 4.5s ease-in-out infinite;
+      animation-delay: 0.9s;
+    }
+    .hv-card-2 .hv-float {
+      animation-delay: 2.6s;
+    }
+    .hero-arrow svg .dash {
+      animation: hvDashFlow 1s linear infinite;
     }
     @media (prefers-reduced-motion: reduce) {
       .hero-text .badge,
@@ -679,10 +767,15 @@
       .hero-text .sub,
       .hero-text .features,
       .hero-text .btn,
-      .hero-image {
+      .hv-card,
+      .hero-arrow {
         opacity: 1;
         animation: none;
         transform: none;
+      }
+      .hv-float,
+      .hero-arrow svg .dash {
+        animation: none;
       }
     }
   </style>
@@ -748,12 +841,33 @@
           <a href="#pricing" class="btn btn-primary">→ Ver precios y activar</a>
         </div>
         <div class="hero-image">
-          <img
-            src="/hero-lead-process.png"
-            alt="Un cliente calcula en su móvil cuánto pierde por placas sucias y, en segundos, tú recibes el contacto con su nombre, email, teléfono y presupuesto estimado."
-            width="1395"
-            height="663"
-          >
+          <div class="hero-visual">
+            <div class="hv-card hv-card-1">
+              <img
+                class="hv-float"
+                src="/hero-card-1.png"
+                alt="Tu cliente calcula lo que pierde: estado estimado de sus placas, la suciedad le cuesta 312 a 540 euros al año."
+                width="300"
+                height="309"
+              >
+            </div>
+            <div class="hero-arrow" role="img" aria-label="En segundos, sin que hagas nada">
+              <svg width="52" height="26" viewBox="0 0 64 32" fill="none">
+                <path class="dash" d="M2 16H58" stroke="#3D5266" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 8"/>
+                <path d="M48 6L60 16L48 26" stroke="#3D5266" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+              <span>En segundos, sin que hagas nada</span>
+            </div>
+            <div class="hv-card hv-card-2">
+              <img
+                class="hv-float"
+                src="/hero-card-2.png"
+                alt="Tú recibes el contacto: nuevo lead recibido con nombre, email, teléfono y presupuesto estimado."
+                width="300"
+                height="345"
+              >
+            </div>
+          </div>
         </div>
       </div>
     </div>
