@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getOwnSubscriber } from "@/lib/subscribers";
 import { createSubscriber } from "../actions";
+import SubmitButton from "../submit-button";
 
 export default async function OnboardingPage() {
   const subscriber = await getOwnSubscriber();
@@ -29,12 +30,12 @@ export default async function OnboardingPage() {
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
           />
         </div>
-        <button
-          type="submit"
+        <SubmitButton
+          pendingText="Creando…"
           className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
         >
           Crear mi calculadora
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

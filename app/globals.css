@@ -22,3 +22,10 @@ body {
   color: var(--foreground);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
+/* El Preflight de Tailwind v4 pone cursor:default en los <button> (por
+   accesibilidad, no todo botón es "clicable" en su criterio) — pero aquí
+   todos nuestros botones sí lo son, así que se restaura el puntero. */
+button:not(:disabled) {
+  cursor: pointer;
+}

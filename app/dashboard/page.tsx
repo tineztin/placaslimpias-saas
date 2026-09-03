@@ -5,6 +5,7 @@ import SettingsForm from "./settings/settings-form";
 import LivePreview from "./live-preview";
 import CopySnippet from "./copy-snippet";
 import DeleteAccount from "./delete-account";
+import SubmitButton from "./submit-button";
 import { createCheckoutSession, createPortalSession } from "./actions";
 
 export default async function DashboardHome() {
@@ -70,12 +71,12 @@ window.addEventListener("message", function (e) {
             al mes, cancela cuando quieras.
           </p>
           <form action={createCheckoutSession}>
-            <button
-              type="submit"
+            <SubmitButton
+              pendingText="Un momento…"
               className="whitespace-nowrap rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
             >
               Suscribirme
-            </button>
+            </SubmitButton>
           </form>
         </div>
       ) : (
@@ -89,9 +90,12 @@ window.addEventListener("message", function (e) {
           )}
           {subscriber.stripe_customer_id && (
             <form action={createPortalSession}>
-              <button type="submit" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+              <SubmitButton
+                pendingText="Un momento…"
+                className="text-sm font-medium text-blue-600 hover:text-blue-700"
+              >
                 Gestionar suscripción y facturas →
-              </button>
+              </SubmitButton>
             </form>
           )}
         </div>
@@ -140,14 +144,23 @@ window.addEventListener("message", function (e) {
           </div>
         }
         stepCode={
-          <div>
-            <p className="text-sm text-slate-500">
-              Pega esto en tu web, donde quieras que aparezca la calculadora.
-            </p>
-            <div className="mt-4">
-              <CopySnippet snippet={snippet} />
+          subscriber.subscription_status === "active" ? (
+            <div>
+              <p className="text-sm text-slate-500">
+                Pega esto en tu web, donde quieras que aparezca la calculadora.
+              </p>
+              <div className="mt-4">
+                <CopySnippet snippet={snippet} />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-8 text-center">
+              <p className="text-sm text-slate-600">
+                El código de instalación se desbloquea al activar tu suscripción.
+              </p>
+              <p className="mt-1 text-xs text-slate-400">9 € + IVA al mes, sin permanencia.</p>
+            </div>
+          )
         }
       />
 
