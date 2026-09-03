@@ -7,4 +7,4 @@ Disallow: /calculadora.html
 Disallow: /demo.html
 Disallow: /reset-password
 
-Sitemap: https://calculadorasolar.top/sitemap.xml
+Sitemap: https://calculadorasolar.net/sitemap.xml

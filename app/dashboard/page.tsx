@@ -15,7 +15,7 @@ export default async function DashboardHome() {
   // ve exactamente qué se está pegando. El pequeño <script> de al lado solo
   // ajusta la altura, escuchando el mismo postMessage que ya emite
   // calculadora.html.
-  const snippet = `<iframe id="solarcalc-frame" src="https://calculadorasolar.top/embed?key=${subscriber.api_key}" style="width:100%;height:560px;border:0;display:block" title="Calculadora Solar"></iframe>
+  const snippet = `<iframe id="solarcalc-frame" src="https://calculadorasolar.net/embed?key=${subscriber.api_key}" style="width:100%;height:560px;border:0;display:block" title="Calculadora Solar"></iframe>
 <script>
 window.addEventListener("message", function (e) {
   var f = document.getElementById("solarcalc-frame");
@@ -134,7 +134,7 @@ window.addEventListener("message", function (e) {
             {(!subscriber.allowed_domains || subscriber.allowed_domains.length === 0) && (
               <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
                 Aún no has añadido ningún dominio autorizado en el paso 1. Tu calculadora solo se
-                mostrará en calculadorasolar.top hasta que lo hagas.
+                mostrará en calculadorasolar.net hasta que lo hagas.
               </div>
             )}
           </div>

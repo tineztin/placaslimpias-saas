@@ -4,13 +4,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendLeadNotification } from "@/lib/email";
 import { checkLeadRateLimit } from "@/lib/ratelimit";
 
-// Llamado por el propio iframe de /embed (misma-origen: calculadorasolar.top
+// Llamado por el propio iframe de /embed (misma-origen: calculadorasolar.net
 // sirve tanto /embed como esta ruta), así que no hace falta CORS — añadir
 // Access-Control-Allow-Origin aquí solo abriría la puerta a que cualquiera
 // pudiera hacer POST directo con una key robada desde otro origen.
 //
 // El dominio de origen del embed no se puede verificar aquí (esta petición
-// siempre llega desde calculadorasolar.top, nunca desde el sitio del
+// siempre llega desde calculadorasolar.net, nunca desde el sitio del
 // suscriptor): esa comprobación ya la hizo el navegador vía la cabecera
 // Content-Security-Policy: frame-ancestors que puso /embed.
 

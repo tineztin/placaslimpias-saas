@@ -1,17 +1,17 @@
 import "server-only";
 import { Resend } from "resend";
 
-// Remitente verificado en Resend (requiere el dominio calculadorasolar.top
+// Remitente verificado en Resend (requiere el dominio calculadorasolar.net
 // verificado ahí con sus registros DNS; si no está verificado, Resend
 // rechaza el envío).
-const FROM = "Calculadora Solar <notificaciones@calculadorasolar.top>";
+const FROM = "Calculadora Solar <notificaciones@calculadorasolar.net>";
 
 // Cabecera de marca compartida por todos los emails transaccionales. Se usa
 // el PNG (no el SVG del sitio) porque los clientes de correo no soportan
 // SVG de forma fiable.
 const EMAIL_HEADER = `
     <div style="text-align:center;margin-bottom:28px">
-      <img src="https://calculadorasolar.top/email-logo.png" width="48" height="48" alt="Calculadora Solar" style="display:block;margin:0 auto 10px">
+      <img src="https://calculadorasolar.net/email-logo.png" width="48" height="48" alt="Calculadora Solar" style="display:block;margin:0 auto 10px">
       <div style="font-size:15px;font-weight:700;color:#0E1620">Calculadora <span style="color:#0066B2">Solar</span></div>
     </div>`;
 
@@ -105,13 +105,13 @@ export async function sendWelcomeEmail(to: string, companyName: string) {
         <li>Previsualízala para comprobar cómo queda.</li>
         <li>Copia el código y pégalo en tu web.</li>
       </ol>
-      <a href="https://calculadorasolar.top/dashboard"
+      <a href="https://calculadorasolar.net/dashboard"
          style="display:inline-block;background:#0066B2;color:#fff;text-decoration:none;
                 padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600">
         Ir a mi panel
       </a>
       <p style="font-size:12px;color:#8496A6;margin-top:24px">
-        ¿Dudas? Escríbenos a hola@calculadorasolar.top.
+        ¿Dudas? Escríbenos a hola@calculadorasolar.net.
       </p>
     </div>`;
 
